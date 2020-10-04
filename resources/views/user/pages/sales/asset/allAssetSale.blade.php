@@ -2,11 +2,11 @@
 @section('content')
 <section class="content-header">
    <div class="header-icon">
-      <i class="fa fa-users"></i>
+      <i class="fa fa-shopping-cart"></i>
    </div>
    <div class="header-title">
       <h1>All Asset Sale</h1>
-      <small>Customer List</small>
+      <small>Asset List</small>
    </div>
 </section>
 
@@ -18,7 +18,7 @@
             <div class="panel-heading">
                <div class="btn-group" id="buttonexport">
                   <a href="#">
-                     <h4>Sales incormation</h4>
+                     <h4>Sales incorporation</h4>
                   </a>
                </div>
             </div>

@@ -2,7 +2,7 @@
 @section('content')
 <section class="content-header">
    <div class="header-icon">
-      <i class="fa fa-sticky-note-o"></i>
+      <i class="fa fa-paper-plane"></i>
    </div>
    <div class="header-title">
       <h1>Other Income</h1>
@@ -33,15 +33,15 @@
                         
                         <div class="form-group">
                            <label>Other Income Name</label>
-                           <input type="text" name="income_name" value="{{ old('income_name') }}" class="form-control" placeholder="Enter Item Name" required>
+                           <input type="text" name="income_name" value="{{ old('income_name') }}" class="form-control" placeholder="Enter Income Name" required>
                         </div>
                         <div class="form-group">
                            <label>Customer Name</label>
-                           <input type="text" name="customer_name" value="{{ old('customer_name') }}" class="form-control" placeholder="Enter Quantity" required>
+                           <input type="text" name="customer_name" value="{{ old('customer_name') }}" class="form-control" placeholder="Enter Customer Name" required>
                         </div>
                         <div class="form-group" style="clear:both;">
                            <label>Customer Phone</label>
-                           <input type="text" name="phone" value="{{ old('phone') }}" class="form-control" placeholder="Enter Quantity">
+                           <input type="text" name="phone" value="{{ old('phone') }}" class="form-control" placeholder="Enter Phone">
                         </div>
                        <div class="form-group">
                            <div class="col-md-3 col-xl-3 col-sm-3 col-xs-6 form-check form-check-inline">
@@ -53,22 +53,24 @@
                              <label class="form-check-label" for="inlineRadio2">Bank</label>
                            </div>
                         </div>
+                        @php
+                           use App\Model\User\Bank\AddBank;
+                           $allBank = AddBank::orderBy('bank_name', 'ASC')->where('status', '1')->get();
+                        @endphp
                         <div id="demo" class="collapse" style="clear:both;">
                          <div class="form-group">
                            <label>Select Bank</label>
                            <select class="form-control" name="bank_name">
-                              <option>US dollar</option>
-                              <option>Australian dollar</option>
-                              <option>Bdt</option>
-                              <option>Canadian dollar</option>
-                              <option>Euro</option>
-                              <option>Pound</option>
+                           <option value="">Choose...</option>
+                           @foreach($allBank as $bank)
+                              <option value="{{ $bank->id }}">{{ $bank->bank_name }}</option>
+                           @endforeach
                            </select>
                         </div>
                        </div>
                        <div class="form-group" style="clear:both;">
                            <label>Email (optional)</label>
-                           <input type="email" name="email" value="{{ old('email') }}" class="form-control" placeholder="Enter Price">
+                           <input type="email" name="email" value="{{ old('email') }}" class="form-control" placeholder="Enter Email">
                         </div>
                      </div>
                      <div class="col-md-6 col-xl-6 col-sm-12">
@@ -107,7 +109,7 @@
                      @if(Session::has('session_id'))
 
                      <a href="{{ route('other.income.print.view') }}" class="btn btn-add w-md m-b-5">View & Print</a>
-
+                     <a href="{{ route('other.income.save.direct') }}" class="btn btn-add w-md m-b-5">Save</a>
                      <table id="dataTableExample1" class="table table-bordered table-striped table-hover">
                         <thead>
                            <tr>

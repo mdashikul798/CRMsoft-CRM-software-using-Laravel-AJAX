@@ -2,11 +2,15 @@
 @section('content')
 <section class="content-header">
    <div class="header-icon">
-      <i class="fa fa-users"></i>
+      <i class="fa fa-shopping-basket"></i>
    </div>
    <div class="header-title">
       <h1>Purchase Details</h1>
-      <small>Customer List</small>
+      <small>Stationery purchase list</small>
+      <div class="btn-group" id="buttonlist" style="float:right;top:-31px;">
+      <input type="text" class="search form-control" placeholder="What you looking for?">
+      </div>
+      <span class="counter pull-right" style="margin-top:-24px;padding:5px;"></span>
    </div>
 </section>
 
@@ -42,9 +46,10 @@
                </div>
                <!-- Plugin content:powerpoint,txt,pdf,png,word,xl -->
                <div class="table-responsive">
-                  <table id="dataTableExample1" class="table table-bordered table-striped table-hover">
+                  <table id="dataTableExample1" class="table table-bordered table-striped table-hover results">
                      <thead>
                         <tr class="info">
+                           <th>SL No.</th>
                            <th>Voucher No.</th>
                            <th>Supplier Name</th>
                            <th>Date</th>
@@ -54,10 +59,14 @@
                            <th>Total</th>
                            <th>Reference</th>
                         </tr>
+                        <tr class="warning no-result">
+                           <td colspan="4"><i class="fa fa-warning"></i> No result matched</td>
+                        </tr>
                      </thead>
                      <tbody>
                         @foreach($allPurchase as $purchase)
                         <tr>
+                           <td>{{ $loop->index +1 }}</td>
                            <td>{{ $purchase->invoiceNum }}</td>
                            <td>{{ $purchase->supplier_name }}</td>
                            <td>{{ date_format(new dateTime($purchase->created_at), 'd-m-y') }}</td>

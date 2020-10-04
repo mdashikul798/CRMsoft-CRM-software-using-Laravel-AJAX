@@ -2,11 +2,11 @@
 @section('content')
 <section class="content-header">
    <div class="header-icon">
-      <i class="fa fa-sticky-note-o"></i>
+      <i class="fa fa-shopping-cart"></i>
    </div>
    <div class="header-title">
       <h1>Product Sale</h1>
-      <small>Invoices list</small>
+      <small>Make a sales invoices from here</small>
    </div>
 </section>
 
@@ -18,7 +18,7 @@
             <div class="panel-heading">
                <div class="btn-group" id="buttonlist"> 
                   <a class="btn btn-add " href="#"> 
-                  <i class="fa fa-list"></i> Sales Invoices</a>  
+                  <i class="fa fa-list"></i> Add your sales</a>  
                </div>
             </div>
             <div class="panel-body">
@@ -30,34 +30,22 @@
                   @csrf
                   <div class="col-md-6 col-xl-6 col-sm-12">
                      <div class="form-group">
-                        <label>Select Category</label>
-                        
-                        @php
-                           use App\Model\User\Category;
-                           $allCategory = Category::orderBy('category_name', 'ASC')
-                                    ->where('status', '1')->get();
-                        @endphp
-                           <select name="category_name" class="form-control" required>
-                              <option value="">Choose Category...</option>
-                              @foreach($allCategory as $category)
-                                 <option value="{{ $category->id }}">{{ $category->category_name }}</option>
-                              @endforeach
-                           </select>
-                        
-                     </div>
-                     <div class="form-group">
-                        <label>Item code</label>
-                        <input type="text" name="item_code" class="form-control" value="{{ old('item_code') }}" placeholder="Enter Item code">
-                     </div>
-                     <div class="form-group">
-                        <label>Item Name</label>
-                        <input type="text" name="item_name" class="form-control" value="{{ old('item_name') }}" placeholder="Enter Item Name">
+                        <label>Select Product</label>
+                        <select name="purchase_id" class="form-control chosen" required>
+                           <option value="">Choose...</option>
+                           @foreach($allPurchase as $product)
+                              <option value="{{ $product->id }}">{{ $product->item_name }} - {{ $product->item_code }}</option>
+                           @endforeach
+                        </select>
                      </div>
                      <div class="form-group">
                         <label>Customer Name</label>
-                        <input type="text" name="customer_name" class="form-control" value="{{ old('customer_name') }}" placeholder="Enter Customer Name">
+                        <input type="text" name="customer_name" class="form-control" value="{{ old('customer_name') }}" placeholder="Enter Customer Name" required>
                      </div>
-
+                    <div class="form-group" style="clear:both;">
+                        <label>Customer Phone</label>
+                        <input type="text" name="customer_phone" class="form-control" value="{{ old('customer_phone') }}" placeholder="Enter Customer Phone">
+                     </div>
                      <div class="form-group">
                         <div class="col-md-3 col-xl-3 col-sm-3 col-xs-6 form-check form-check-inline">
                           <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1" checked>
@@ -68,30 +56,27 @@
                           <label class="form-check-label" for="inlineRadio2"> Bank</label>
                         </div>
                      </div>
+                     @php
+                        use App\Model\User\Bank\AddBank;
+                        $allBank = AddBank::orderBy('bank_name', 'ASC')->where('status', '1')->get();
+                     @endphp
                     <div id="demo" class="collapse" style="clear:both;">
                       <div class="form-group">
                         <label>Select Bank</label>
                         <select class="form-control" name="bank_name">
                            <option value="">Choose...</option>
-                           <option value="Sonali Bank">Australian dollar</option>
-                           <option value="">Bdt</option>
-                           <option value="">Canadian dollar</option>
-                           <option value="">Euro</option>
-                           <option value="">Pound</option>
+                           @foreach($allBank as $bank)
+                              <option value="{{ $bank->id }}">{{ $bank->bank_name }}</option>
+                           @endforeach
                         </select>
                      </div>
                     </div>
                     <div class="form-group" style="clear:both;">
-                        <label>Customer Phone</label>
-                        <input type="text" name="customer_phone" class="form-control" value="{{ old('customer_phone') }}" placeholder="Enter Customer Phone" required>
-                     </div>
-                  </div>
-                  <div class="col-md-6 col-xl-6 col-sm-12">
-                     <div class="form-group" style="clear:both;">
                         <label>Quantity</label>
                         <input type="number" name="quentity" id="quentity" oninput="changeTotalSale()" class="form-control" value="{{ old('quentity') }}" placeholder="Enter Quantity">
                      </div>
-                     
+                  </div>
+                  <div class="col-md-6 col-xl-6 col-sm-12">
                      <div class="form-group">
                         <label>Discount (per unit)</label>
                         <input type="number" name="discount" id="discount" oninput="changeTotalSale()" class="form-control" value="{{ old('discount') }}" placeholder="Enter Discount">
@@ -121,13 +106,16 @@
                <form>
                   <h4>Sales Details</h4>
                   @php
-                     use App\Model\User\Sale\Sale;
-                     $allSale = Sale::orderBy('id', 'DESC')
-                        ->where('token', Session('_token'))->get();
+                     $allSale = DB::table('sales')->orderBy('id', 'DESC')
+                           ->leftjoin('product_purchases', 'sales.purchase_id', 'product_purchases.id')
+                           ->select('sales.*', 'product_purchases.item_name', 'product_purchases.item_code')
+                           ->where('sales.token', Session('_token'))
+                           ->get();
                   @endphp
                   @if(Session::has('session_id'))
 
                   <a href="{{ route('product.print.view') }}" class="btn btn-add w-md m-b-5">View & Print</a>
+                  <a href="{{ route('product.sale.save') }}" class="btn btn-add w-md m-b-5">Save</a>
 
                   <table id="dataTableExample1" class="table table-bordered table-striped table-hover">
                      <thead>
@@ -146,7 +134,7 @@
                         @foreach($allSale as $sale)
                         <tr>
                            <td>{{ $loop->index +1 }}</td>
-                           <td>{{ $sale->item_name}}</td>
+                           <td>{{ $sale->item_name}} - {{ $sale->item_code}}</td>
                            <td>{{ number_format($sale->price) }}</td>
                            <td>{{ $sale->quentity}}
                               <a href="{{ route('add.sale.qty', $sale->id) }}" class="btn btn-sm btn-warning pull-right" style="margin-left:3px;"><i class="fa fa-plus"></i></a>

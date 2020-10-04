@@ -16,12 +16,10 @@ class CreateSalesTable extends Migration
         Schema::create('sales', function (Blueprint $table) {
             $table->increments('id');
             $table->string('invoiceNum');
-            $table->tinyInteger('category_id');
-            $table->string('item_code')->nullable();
-            $table->string('item_name');
+            $table->string('purchase_id');
             $table->string('customer_name');
             $table->string('bank_name')->nullable();
-            $table->string('phone');
+            $table->string('phone')->nullable();
             $table->integer('quentity')->default('1');
             $table->float('price', 15, 2);
             $table->float('amountdue', 15, 2)->default('0');

@@ -16,6 +16,7 @@ class CreateReceivablesTable extends Migration
         Schema::create('receivables', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('sales_id');
+            $table->integer('purchase_id');
             $table->float('amountdue', 15, 2)->nullable();
             $table->tinyInteger('status')->default('1');
             $table->timestamps();

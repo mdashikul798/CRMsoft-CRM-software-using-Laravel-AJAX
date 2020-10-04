@@ -103,7 +103,7 @@
 	                           <td>{{ $staff->phone }}</td>
 	                           <td>{{ $staff->nid_number }}</td>
 	                           <td>
-	                              <input {{ $staff->status ==1 ? 'checked':''}} id="officeStaffStatus" data-id="{{ $staff->id}}" type="checkbox" data-toggle="toggle" data-on="Active" data-off="Inactive">
+	                              <input {{ $staff->status ==1 ? 'checked':''}} id="officeStaffStatus" data-id="{{ $staff->id}}" type="checkbox" data-toggle="toggle" data-on="Active" data-off="Inactive" data-size="mini">
 	                           </td>
 	                           <td>
 	                              <a href="{{ route('deleteOfficeStaff', $staff->id) }}" class="btn btn-danger btn-sm" id="delete"><i class="fa fa-trash-o"></i> </a>

@@ -2,11 +2,11 @@
 @section('content')
 <section class="content-header">
    <div class="header-icon">
-      <i class="fa fa-sticky-note-o"></i>
+      <i class="fa fa-shopping-basket"></i>
    </div>
    <div class="header-title">
       <h1>Product Purchase</h1>
-      <small>Invoices list</small>
+      <small>Purchase list</small>
    </div>
 </section>
 
@@ -45,7 +45,7 @@
                         
                      </div>
                      <div class="form-group">
-                        <label>Item code</label>
+                        <label>Item code / model</label>
                         <input type="text" name="item_code" class="form-control" value="{{ old('item_code') }}" placeholder="Enter Item code">
                      </div>
                      <div class="form-group">
@@ -54,7 +54,7 @@
                      </div>
                      <div class="form-group">
                         <label>Supplier Name</label>
-                        <input type="text" name="supplier_name" class="form-control" value="{{ old('customer_name') }}" placeholder="Enter Customer Name">
+                        <input type="text" name="supplier_name" class="form-control" value="{{ old('customer_name') }}" placeholder="Enter Supplier Name">
                      </div>
 
                      <div class="form-group">
@@ -67,16 +67,18 @@
                           <label class="form-check-label" for="inlineRadio2"> Bank</label>
                         </div>
                      </div>
+                     @php
+                        use App\Model\User\Bank\AddBank;
+                        $allBank = AddBank::orderBy('bank_name', 'ASC')->where('status', '1')->get();
+                     @endphp
                     <div id="demo" class="collapse" style="clear:both;">
                       <div class="form-group">
                         <label>Select Bank</label>
                         <select class="form-control" name="bank_name">
                            <option value="">Choose...</option>
-                           <option value="Sonali Bank">Australian dollar</option>
-                           <option value="">Bdt</option>
-                           <option value="">Canadian dollar</option>
-                           <option value="">Euro</option>
-                           <option value="">Pound</option>
+                           @foreach($allBank as $bank)
+                              <option value="{{ $bank->id }}">{{ $bank->bank_name }}</option>
+                           @endforeach
                         </select>
                      </div>
                     </div>
@@ -104,8 +106,12 @@
                         <input type="number" name="amountdue" id="amountDue" oninput="changeTotalSale()" class="form-control" value="{{ old('amountdue') }}" placeholder="Enter Due Amount">
                      </div>
                      <div class="form-group">
+                        <label>Expair Date</label>
+                        <input type="date" name="exp_date" class="form-control">
+                     </div>
+                     <div class="form-group">
                         <label>Total</label>
-                        <input type="number" name="total" id="total" class="form-control" placeholder="Enter total" readonly>
+                        <input type="number" name="total" id="total" class="form-control" readonly>
                      </div>
                      <div class="reset-button">
                         
@@ -127,7 +133,7 @@
                   @if(Session::has('session_id'))
 
                   <a href="{{ route('purchase.print.view') }}" class="btn btn-add w-md m-b-5">View & Print</a>
-
+                  <a href="{{ route('product.purchase.save') }}" class="btn btn-add w-md m-b-5">Save</a>
                   <table id="dataTableExample1" class="table table-bordered table-striped table-hover">
                      <thead>
                         <tr>

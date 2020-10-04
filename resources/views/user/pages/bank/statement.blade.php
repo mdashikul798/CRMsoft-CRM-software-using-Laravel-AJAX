@@ -2,11 +2,11 @@
 @section('content')
 <section class="content-header">
    <div class="header-icon">
-      <i class="fa fa-users"></i>
+      <i class="fa fa-bank"></i>
    </div>
    <div class="header-title">
       <h1>Bank Statement</h1>
-      <small>Customer List</small>
+      <small>Statement List</small>
       <div class="btn-group" id="buttonlist" style="float:right;top:-31px;">
       <input type="text" class="search form-control" placeholder="What you looking for?">
       </div>
@@ -66,7 +66,11 @@
                            $balance = 0;
                         @endphp
                         @foreach($alltrans as $tran)
-                        @if(!is_null($tran->deposit && $tran->deposit))
+                        @php
+                              $allDepo += $tran->deposit;
+                              $allWithd += $tran->withdrawal;
+                              $balance = $allDepo - $allWithd;
+                           @endphp
                            <tr>
                               <td>{{ $tran->bank_name}}</td>
                               <td>{{ $tran->date}}</td>
@@ -74,12 +78,7 @@
                               <td>{{ number_format($tran->withdrawal) }}</td>
                               <td>{{ number_format($balance) }}</td>
                            </tr>
-                           @endif
-                           @php
-                              $allDepo += $tran->deposit;
-                              $allWithd += $tran->withdrawal;
-                              $balance = $allDepo - $allWithd;
-                           @endphp
+                           
                         @endforeach
                      </tbody>
                   </table>

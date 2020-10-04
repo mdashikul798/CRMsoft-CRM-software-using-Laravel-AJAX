@@ -48,7 +48,7 @@ class OtherIncomeController extends Controller
         }catch(\Exception $e){
             return redirect('/income/add-other-income')->with('error', $e->getMessage());
         }
-        return redirect('/income/add-other-income')->with('success', 'Other-Income added successfully');
+        return redirect('/income/add-other-income');
     }
 
 
@@ -64,6 +64,27 @@ class OtherIncomeController extends Controller
         }
         $income->delete();
         return back();
+    }
+
+    public function otherIncomeSaveDirect(Request $request){
+        $allIncome = OtherIncome::orderBy('id', 'DESC')
+                ->where('token', Session('_token'))->get();
+        
+        try{
+            $createdInv = $allIncome['0']['invoiceNum'];
+
+            foreach($allIncome as $income){
+                $income->invoiceNum = $createdInv;
+                $income->token = null;
+                $income->status = '1';
+                $income->update();
+            }
+            
+            Session::forget('session_id');
+        }catch(\Exception $e){
+            return redirect('/income/add-other-income')->with('error', $e->getMessage());
+        }
+        return redirect('/income/add-other-income')->with('success', 'Other income added successfully');
     }
 
     public function otherIncomePrintView(){
@@ -90,7 +111,7 @@ class OtherIncomeController extends Controller
 
     /*After updating data to the 'sale' table it will also save the data to the 'view_sales' table*/
                 $viewSale->sales_id = $income->id;
-                $viewSale->item_name = $income->income_name;
+                $viewSale->invoiceNum = $createdInv;
                 $viewSale->status = '1';
                 $viewSale->save();
             }
@@ -102,7 +123,7 @@ class OtherIncomeController extends Controller
         }
         return redirect('/income/add-other-income');
     }
-    //End of product sell route
+    //End of 'other income'
 
 
 

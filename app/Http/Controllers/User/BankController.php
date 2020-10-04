@@ -38,7 +38,7 @@ class BankController extends Controller
     public function addDeposit(Request $request){
     	$request->validate([
     		'bank' => 'required',
-    		'date' => 'required|date',
+    		'date' => 'required',
     		'amount' => 'required'
     	]);
 
@@ -65,7 +65,7 @@ class BankController extends Controller
     	$bankAct->invoiceNum = $invoiceNum;
     	$bankAct->save();
 
-    	return redirect('/bank/bank-deposit')->with('success', 'Deposit added successfully');
+    	return redirect('/bank/bank-deposit');
     }
 
     
@@ -149,7 +149,7 @@ class BankController extends Controller
     	$bankAct->invoiceNum = $invoiceNum;
     	$bankAct->save();
 
-    	return redirect('bank/bank-withdrawal')->with('success', 'Withdrawal added successfully');
+    	return redirect('bank/bank-withdrawal');
     }
 
     public function deleteWithdrawal($id){
@@ -210,10 +210,10 @@ class BankController extends Controller
    **/
     public function statement(){
         $alltrans = DB::table('bank_acts')->orderBy('date', 'ASC')
-                ->leftjoin('deposits', 'bank_acts.date', '=', 'deposits.date')
-                ->leftjoin('withdrawals', 'bank_acts.date', '=', 'withdrawals.date')
+                ->leftjoin('deposits', 'bank_acts.deposit_id', '=', 'deposits.id')
+                ->leftjoin('withdrawals', 'bank_acts.withdrawal_id', '=', 'withdrawals.id')
                 ->leftjoin('add_banks', 'bank_acts.bank', '=', 'add_banks.id')
-                ->select('bank_acts.*', 'deposits.amount as deposit', 'withdrawals.amount as withdrawal', 'bank_acts.amount as amount', 'add_banks.bank_name')
+                ->select('bank_acts.*', 'deposits.amount as deposit', 'withdrawals.amount as withdrawal', 'add_banks.bank_name')
                 ->where('bank_acts.status', 1)
                 ->get();
     	return view('user.pages.bank.statement', compact('alltrans'));

@@ -134,8 +134,8 @@
   <body>
     <div id="wrapper">
       @php
-          use App\Model\User\Sale\OtherSale;
-          $other = OtherSale::orderBy('id', 'DESC')
+          use App\Model\User\Sale\AssetSale;
+          $other = AssetSale::orderBy('id', 'DESC')
              ->where('token', Session('_token'))->get();
        @endphp
        @if(Session::has('session_id'))

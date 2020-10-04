@@ -2,11 +2,11 @@
 @section('content')
 <section class="content-header">
    <div class="header-icon">
-      <i class="fa fa-users"></i>
+      <i class="fa fa-paper-plane"></i>
    </div>
    <div class="header-title">
-      <h1>Customer</h1>
-      <small>Customer List</small>
+      <h1>Other Income</h1>
+      <small>Other income list</small>
    </div>
 </section>
 

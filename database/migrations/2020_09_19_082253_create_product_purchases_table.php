@@ -25,6 +25,7 @@ class CreateProductPurchasesTable extends Migration
             $table->integer('quentity')->default('1');
             $table->float('price', 15, 2);
             $table->float('amountdue', 15, 2)->nullable();
+            $table->date('exp_date')->nullable();
             $table->float('discount', 15, 2)->nullable();
             $table->float('total', 15, 2);
             $table->string('token')->nullable();

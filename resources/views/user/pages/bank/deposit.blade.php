@@ -3,7 +3,7 @@
 <!-- Content Header (Page header) -->
 <section class="content-header">
    <div class="header-icon">
-      <i class="fa fa-shopping-basket"></i>
+      <i class="fa fa-bank"></i>
    </div>
    <div class="header-title">
       <h1>Deposit</h1>
@@ -37,8 +37,8 @@
                      </select>
                   </div>
                   <div class="form-group col-sm-6">
-                     <label>Referance Number</label>
-                     <input type="text" name="reference" value="{{ old('reference') }}" class="form-control" placeholder="Enter Amount" required>
+                     <label>Reference Number</label>
+                     <input type="text" name="reference" value="{{ old('reference') }}" class="form-control" placeholder="Enter Reference Number">
                   </div>
                   <div class="col-sm-12">
                      <div class="form-group col-sm-6">
@@ -67,13 +67,15 @@
          <div class="panel lobidisable panel-bd">
             @php
                use App\Model\User\Bank\Deposit;
-               $allDeposit = Deposit::orderBy('id', 'DESC')
-                        ->where('token', Session('_token'))->get();
+               $allDeposit = DB::table('deposits')->orderBy('id', 'DESC')
+                  ->leftjoin('add_banks', 'deposits.bank', 'add_banks.id')
+                  ->select('deposits.*', 'add_banks.bank_name', 'add_banks.account_number')
+                  ->where('token', Session('_token'))->get();
             @endphp
             @if(Session::has('session_id'))
             <div class="panel-heading">
                <div class="btn-group">
-                  <a href="{{ route('save.deposit') }}" class="btn btn-exp btn-sm">Click to save transaction</a>
+                  <a href="{{ route('save.deposit') }}" class="btn btn-exp m-b-5">Save transaction</a>
                </div>
             </div>
             <div class="panel-body">
@@ -90,7 +92,7 @@
                      <tbody>
                         @foreach($allDeposit as $deposit)
                         <tr>
-                           <td>{{ $deposit->bank }}</td>
+                           <td>{{ $deposit->bank_name }} - {{ $deposit->account_number }}</td>
                            <td>{{ $deposit->date }}</td>
                            <td>{{ $deposit->amount }}</td>
                            <td>

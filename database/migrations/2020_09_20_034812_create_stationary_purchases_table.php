@@ -17,7 +17,7 @@ class CreateStationaryPurchasesTable extends Migration
             $table->increments('id');
             $table->string('invoiceNum');
             $table->string('item_name');
-            $table->string('supplier_name');
+            $table->string('supplier_name')->nullable();
             $table->integer('quentity')->nullable();
             $table->float('price', 15, 2);
             $table->text('description')->nullable();

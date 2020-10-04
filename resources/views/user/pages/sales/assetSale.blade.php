@@ -2,11 +2,11 @@
 @section('content')
 <section class="content-header">
    <div class="header-icon">
-      <i class="fa fa-sticky-note-o"></i>
+      <i class="fa fa-shopping-cart"></i>
    </div>
    <div class="header-title">
       <h1>Asset Sale</h1>
-      <small>Invoices list</small>
+      <small>Make an asset sales invoices from here</small>
    </div>
 </section>
 
@@ -19,7 +19,7 @@
             <div class="panel-heading">
                <div class="btn-group" id="buttonlist"> 
                   <a class="btn btn-add " href="#"> 
-                  <i class="fa fa-list"></i> Sales Invoices</a>  
+                  <i class="fa fa-list"></i> Asset sales invoices</a>  
                </div>
             </div>
             <div class="row">
@@ -28,8 +28,13 @@
                   <form action="{{ route('add.asset.sale') }}" method="post">
                      @csrf
                      <div class="form-group">
-                        <label>Item Name</label>
-                        <input type="text" name="item_name" value="{{ old('item_name') }}" class="form-control" placeholder="Enter Item Name" required>
+                        <label>Asset Name</label>
+                        <select name="item_name" class="form-control" required>
+                           <option value="">Select...</option>
+                           @foreach($allAsset as $asset)
+                           <option value="{{ $asset->item_name }}">{{ $asset->item_name }}</option>
+                           @endforeach
+                        </select>
                      </div>
                      <div class="form-group">
                         <label>Customer Name</label>
@@ -75,7 +80,7 @@
                         @endphp
                         @if(Session::has('session_id'))
                         <a href="{{ route('asset.sale.view') }}" class="btn btn-add w-md m-b-5">View & Print</a>
-
+                        <a href="{{ route('asset.sale.save') }}" class="btn btn-add w-md m-b-5">Save</a>
                         <table id="dataTableExample1" class="table table-bordered table-striped table-hover">
                            <thead>
                               <tr>

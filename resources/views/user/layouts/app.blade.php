@@ -128,7 +128,6 @@
                      </a>
                      <ul class="treeview-menu">
                         <li class="{{ request()->is('sale/product-sale') ? 'active' : '' }}"><a href="{{ route('product.sale') }}">Product Sale</a></li>
-                        <li class="{{ request()->is('sale/other-sale') ? 'active' : '' }}"><a href="{{ route('other.sale') }}">Other Sale</a></li>
                         <li class="{{ request()->is('sale/asset-sale') ? 'active' : '' }}"><a href="{{ route('asset.sale') }}">Asset Sale</a></li>
                         <li class="{{ request()->is('sale/view/*') ? 'active' : '' }}"><a href="#"><span>View sales activities</span>
                            <span class="pull-right-container">
@@ -137,7 +136,6 @@
                            </a>
                            <ul class="treeview-menu">
                               <li class="{{ request()->is('sale/view/product-sale') ? 'active' : '' }}"><a href="{{ route('view.product.sale') }}">Product</a></li>
-                              <li class="{{ request()->is('sale/view/other-sale') ? 'active' : '' }}"><a href="{{ route('view.other.sale') }}">Other-Sale</a></li>
                               <li class="{{ request()->is('sale/view/asset-sale') ? 'active' : '' }}"><a href="{{ route('view.asset.sale') }}">Asset-Sale</a></li>
                            </ul>
                         </li>
@@ -145,7 +143,7 @@
                   </li>
                   <li class="treeview {{ request()->is('purchase/*') ? 'active' : '' }}">
                      <a href="#">
-                     <i class="fa fa-shopping-bag"></i><span>Purchase</span>
+                     <i class="fa fa-shopping-basket"></i><span>Purchase</span>
                      <span class="pull-right-container">
                      <i class="fa fa-angle-left pull-right"></i>
                      </span>
@@ -242,7 +240,6 @@
                      </span>
                      </a>
                      <ul class="treeview-menu">
-                        <li class="{{ request()->is('accounting/view-balanceSheet') ? 'active' : '' }}"><a href="{{ route('view.balanceSheet') }}">Balance Sheet</a></li>
                         <li class="{{ request()->is('accounting/view-profit-loss') ? 'active' : '' }}"><a href="{{ route('view.profit.loss') }}">Profit & Loss</a></li>
                         <li class="{{ request()->is('accounting/view-fixed-asset') ? 'active' : '' }}"><a href="{{ route('view.fixed.asset') }}">Fixed Asset</a></li>
                         <li class="{{ request()->is('accounting/view-receivable') ? 'active' : '' }}"><a href="{{ route('view.receivable') }}">Receivable</a></li>
@@ -257,10 +254,8 @@
                      </span>
                      </a>
                      <ul class="treeview-menu">
-                        <li class="{{ request()->is('report/*') ? 'active' : '' }}"><a href="{{ route('view.stock') }}">Stock Report</a></li>
-                        <li class="{{ request()->is('report/*') ? 'active' : '' }}"><a href="creport.html">Customer Report</a></li>
-                        <li class="{{ request()->is('report/*') ? 'active' : '' }}"><a href="ereport.html">Expense Report</a></li>
-                        <li class="{{ request()->is('report/*') ? 'active' : '' }}"><a href="incomexp.html">Income Report</a></li>
+                        <li class="{{ request()->is('report/view-stock-report') ? 'active' : '' }}"><a href="{{ route('view.stock.report') }}">Stock Report</a></li>
+                        <li class="{{ request()->is('report/view-customer-report') ? 'active' : '' }}"><a href="{{ route('view.customer.report') }}">Customer Report</a></li>
                      </ul>
                   </li>
                   <li class="treeview {{ request()->is('component/*') ? 'active' : '' }}">
@@ -277,6 +272,12 @@
                         <li class="{{ request()->is('component/add-meter') ? 'active' : '' }}"><a href="{{ route('add.meter') }}">Add electricity meter</a></li>
                         <li class="{{ request()->is('component/add-depreciation') ? 'active' : '' }}"><a href="{{ route('add.depreciation') }}">Depreciation expense</a></li>
                      </ul>
+                  </li>
+
+                  <li class="treeview {{ request()->is('customer-lottery') ? 'active' : '' }}">
+                     <a href="{{ route('customer.lottery') }}" target="_blank">
+                     <i class="fa fa-trophy"></i><span>Best Customer</span>
+                     </a>
                   </li>
                </ul>
             </div>
@@ -300,10 +301,7 @@
          =====================================================================-->
       <!-- jQuery -->
       <script src="{{ asset('public/component') }}/assets/plugins/jQuery/jquery-1.12.4.min.js" type="text/javascript"></script>
-
-      
-
-      <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
+      <script src="{{ asset('public/component') }}/assets/plugins/validation/1.16.0/jquery.validate.min.js"></script>
       <!-- jquery-ui --> 
       <script src="{{ asset('public/component') }}/assets/plugins/jquery-ui-1.12.1/jquery-ui.min.js" type="text/javascript"></script>
       <!-- Bootstrap -->
@@ -325,8 +323,6 @@
          =====================================================================-->
       <!-- Dashboard js -->
       <script src="{{ asset('public/component') }}/assets/dist/js/dashboard.js" type="text/javascript"></script>
-      
-
       <!-- Pace js -->
       <!-- table-export js -->
       <script src="{{ asset('public/component') }}/assets/plugins/table-export/tableExport.js" type="text/javascript"></script>

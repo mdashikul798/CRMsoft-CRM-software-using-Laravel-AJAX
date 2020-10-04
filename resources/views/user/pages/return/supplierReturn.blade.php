@@ -2,7 +2,7 @@
 @section('content')
 <section class="content-header">
    <div class="header-icon">
-      <i class="fa fa-sticky-note-o"></i>
+      <i class="fa fa-clock-o"></i>
    </div>
    <div class="header-title">
       <h1>Product Return to Supplier</h1>
@@ -27,50 +27,52 @@
             </div>
             <div class="panel-body">
                <div class="col-md-12 col-xl-6 col-sm-12">
-                  <form action="{{ route('add.supplier.return') }}" method="post">
+                  <form action="{{ route('save.supplier.return') }}" method="post">
                      @csrf
                      <div class="col-md-6 col-xl-6 col-sm-12">
+                      <input type="hidden" id="invoiceNum" name="invoiceNum">
                         <div class="form-group">
-                           <label>Item Code/Model</label>
-                           <input type="text" id="item_code" name="item_code" class="form-control" placeholder="Enter Item Name" required>
+                           <label>Item Code / Model</label>
+                           <input type="text" id="item_code" name="item_code" class="form-control" placeholder="Enter Item Code" required>
                         </div>
                         <div class="form-group">
                            <label>Item Name</label>
-                           <input type="text" id="product_name" name="item_name" class="form-control" placeholder="Enter Quantity" required>
+                           <input type="text" id="product_name" name="item_name" class="form-control" placeholder="Enter Item Name" required>
                         </div>
                         <div class="form-group">
                            <label>Supplier Name</label>
-                           <input type="text" id="supplier_name" name="supplier_name" class="form-control" placeholder="Enter Quantity" readonly>
+                           <input type="text" id="supplier_name" name="supplier_name" class="form-control" readonly>
                         </div>
                         <div class="form-group">
                            <label>Supplier Phone</label>
-                           <input type="number" id="phone" name="phone" class="form-control" placeholder="Enter Quantity" readonly>
+                           <input type="number" id="phone" name="phone" class="form-control" readonly>
                         </div>
+
                        <div class="form-group col-md-12 col-sm-12 col-xl-12 col-xs-12" style="clear:both;">
-                           <div class="col-md-6 col-sm-12 col-xl-6 col-xs-12">
-                              <label>Purchase Price</label>
-                              <input type="number" id="price" name="price" class="form-control" placeholder="Enter Quantity" readonly>
-                           </div>
-                           <div class="col-md-6 col-sm-12 col-xl-6 col-xs-12">
-                              <label>Purchase Quentity</label>
-                              <input type="number" id="quentity" name="quentity" class="form-control" placeholder="Enter Quantity" readonly>
-                           </div>
-                           </div>
-                           <div class="form-group col-md-12 col-sm-12 col-xl-12 col-xs-12" style="clear:both;">
-                           <div class="col-md-6 col-sm-12 col-xl-6 col-xs-12">
-                              <label>Purchase Discount</label>
-                              <input type="number" id="discount" name="discount" class="form-control" placeholder="Enter Quantity" readonly>
-                           </div>
-                           <div class="col-md-6 col-sm-12 col-xl-6 col-xs-12">
-                              <label>Purchase Total</label>
-                              <input type="number" id="total" name="purchase_total" class="form-control" placeholder="Enter Quantity" readonly>
-                           </div>
-                        </div>
-                     </div>
+                       <div class="col-md-6 col-sm-12 col-xl-6 col-xs-12">
+                          <label>Sales Price</label>
+                          <input type="number" id="price" name="price" class="form-control" readonly>
+                       </div>
+                       <div class="col-md-6 col-sm-12 col-xl-6 col-xs-12">
+                          <label>Sales Quentity</label>
+                          <input type="number" id="quentity" name="quentity" class="form-control" readonly>
+                       </div>
+                       </div>
+                       <div class="form-group col-md-12 col-sm-12 col-xl-12 col-xs-12" style="clear:both;">
+                       <div class="col-md-6 col-sm-12 col-xl-6 col-xs-12">
+                          <label>Sales Discount</label>
+                          <input type="number" id="discount" name="discount" class="form-control" readonly>
+                       </div>
+                       <div class="col-md-6 col-sm-12 col-xl-6 col-xs-12">
+                          <label>Purchase Total</label>
+                          <input type="number" id="total" name="purchase_total" class="form-control" readonly>
+                       </div>
+                       </div>
+                    </div>
                      <div class="col-md-6 col-xl-6 col-sm-12">
                         <div class="form-group">
                            <label>Purchase Date</label>
-                           <input type="text" id="date" name="date" class="form-control" placeholder="Enter Quantity" readonly>
+                           <input type="text" id="date" name="date" class="form-control" readonly>
                         </div>
                         <div class="form-group" style="clear:both;">
                            <label>Return Reason</label>
@@ -82,61 +84,22 @@
                               <option value="">Other</option>
                            </select>
                         </div>
+                        <div class="form-group">
+                          <label>Return Quentity</label>
+                          <input type="number" id="return_quentity" name="return_quentity" oninput="customerReturnQty()" class="form-control" required>
+                       </div>
                         <div class="form-group" style="clear:both;">
                            <label>Description</label>
                            <textarea name="description" class="form-control" cols="30" rows="6"></textarea>
                         </div>
                         <div class="form-group">
-                           <label>Return Amount</label>
-                           <input type="number" name="return_amount" class="form-control" placeholder="Enter Price" required>
-                        </div>
+                          <label>Return Amount</label>
+                          <input type="number" id="return_amount" name="return_amount" class="form-control" readonly>
+                       </div>
                         <div class="reset-button">
                            <button type="submit" class="btn btn-add pull-right w-md m-b-5">Add</button>
                         </div>
                      </div>
-                  </form>
-               </div>
-               <div class="panel-body">
-                  
-                  <form class="col-md-12 col-xl-6 col-sm-12">
-                     <h4>Return Details </h4>
-                     @php
-                       use App\Model\User\Returns\SupplierReturn;
-                       $allreturn = SupplierReturn::orderBy('id', 'DESC')
-                           ->where('token', Session('_token'))
-                           ->get();
-                     @endphp
-                     @if(Session::has('session_id'))
-                     <a href="{{ route('save.supplier.return') }}" class="btn btn-add w-md m-b-5">Save Returns</a>
-                      <table id="dataTableExample1" class="table table-bordered table-striped table-hover">
-                         <thead>
-                            <tr>
-                               <th>SL No.</th>
-                               <th>Item Name</th>
-                               <th>Customer Name</th>
-                               <th>Sale Amount</th>
-                               <th>Return Amount</th>
-                               <th>Action</th>
-                            </tr>
-                         </thead>
-                         <tbody>
-                           @foreach($allreturn as $return)
-                            <tr>
-                               <td>{{ $loop->index +1 }}</td>
-                               <td>{{ $return->item_name }} - {{ $return->item_code }}</td>
-                               <td>{{ $return->supplier_name }}</td>
-                               <td>{{ $return->reason }}</td>
-                               <td>{{ $return->return_amount }}</td>
-                               <td>
-                                  <a href="{{ route('delete.supplier.return', $return->id) }}" class="btn btn-danger btn-sm" id="delete"><i class="fa fa-trash-o"></i> </a>
-                               </td>
-                            </tr>
-                            @endforeach
-                         </tbody>
-                      </table>
-                      @else
-                      <h2 style="text-align:center;">No return is added</h2>
-                      @endif
                   </form>
                </div>
             </div>

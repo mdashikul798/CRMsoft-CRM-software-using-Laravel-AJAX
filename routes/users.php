@@ -36,20 +36,15 @@ Route::prefix('sale')->group(function()
 	Route::get('/add-sale-qty/{id}', 'User\SaleController@addSaleQty')->name('add.sale.qty');
 	Route::get('/reduce-sale-qty/{id}', 'User\SaleController@reduceSaleQty')->name('reduce.sale.qty');
 	Route::get('/delete-product/{id}', 'User\SaleController@deleteProduct')->name('delete.product');
+	Route::get('/product-sale-save', 'User\SaleController@productSaleSave')->name('product.sale.save');
 	Route::get('/product-print-view', 'User\SaleController@productSaleView')->name('product.print.view');
 	Route::get('/product-print', 'User\SaleController@productSalePrint')->name('product.print');
 	
-	//Other sale route
-	Route::get('/other-sale', 'User\SaleController@otherSale')->name('other.sale');
-	Route::post('add-other-sale', 'User\SaleController@addOtherSale')->name('add.other.sale');
-	Route::get('delete-other-sale/{id}', 'User\SaleController@deleteOtherSale')->name('delete.other.sale');
-	Route::get('other-sale-view', 'User\SaleController@otherSaleView')->name('other.sale.view');
-	Route::get('other-sale-print', 'User\SaleController@otherSalePrint')->name('other.sale.print');
-
 	//Asset sale route
 	Route::get('/asset-sale', 'User\SaleController@assetSale')->name('asset.sale');
 	Route::post('add-asset-sale', 'User\SaleController@addAssetSale')->name('add.asset.sale');
 	Route::get('delete-asset-sale/{id}', 'User\SaleController@deleteAssetSale')->name('delete.asset.sale');
+	Route::get('asset-sale-save', 'User\SaleController@assetSaleSave')->name('asset.sale.save');
 	Route::get('asset-sale-view', 'User\SaleController@assetSaleView')->name('asset.sale.view');
 	Route::get('asset-sale-print', 'User\SaleController@assetSalePrint')->name('asset.sale.print');
 	//Route for views
@@ -68,6 +63,7 @@ Route::prefix('sale')->group(function()
 	Route::get('/add-purchase-qty/{id}', 'User\PurchaseController@addPurchaseQty')->name('add.purchase.qty');
 	Route::get('/reduce-purchase-qty/{id}', 'User\PurchaseController@reducePurchaseQty')->name('reduce.purchase.qty');
 	Route::get('/delete-product/{id}', 'User\PurchaseController@deletePurchase')->name('delete.purchase');
+	Route::get('/product-purchase-save', 'User\PurchaseController@productPurchaseSave')->name('product.purchase.save');
 	Route::get('/product-print-view', 'User\PurchaseController@purchasePrintView')->name('purchase.print.view');
 	Route::get('/product-print', 'User\PurchaseController@purchasePrint')->name('purchase.print');
 	
@@ -77,6 +73,7 @@ Route::prefix('sale')->group(function()
 	Route::get('/add-stationery-qty/{id}', 'User\PurchaseController@addStationeryQty')->name('add.stationery.qty');
 	Route::get('/reduce-stationery-qty/{id}', 'User\PurchaseController@reduceStationeryQty')->name('reduce.stationery.qty');
 	Route::get('/delete-stationery/{id}', 'User\PurchaseController@deleteStationery')->name('delete.stationery');
+	Route::get('/stationery-purchase-save', 'User\PurchaseController@stationeryPurchaseSave')->name('stationery.purchase.save');
 	Route::get('/stationery-print-view', 'User\PurchaseController@stationeryPrintView')->name('stationery.print.view');
 	Route::get('/stationery-print', 'User\PurchaseController@stationeryPrint')->name('stationery.print');
 	
@@ -86,6 +83,7 @@ Route::prefix('sale')->group(function()
 	Route::get('/add-asset-qty/{id}', 'User\PurchaseController@addAssetQty')->name('add.asset.qty');
 	Route::get('/reduce-asset-qty/{id}', 'User\PurchaseController@reduceAssetQty')->name('reduce.asset.qty');
 	Route::get('/delete-asset/{id}', 'User\PurchaseController@deleteAsset')->name('delete.asset');
+	Route::get('/asset-purchase-save', 'User\PurchaseController@assetPurchaseSave')->name('asset.purchase.save');
 	Route::get('/asset-print-view', 'User\PurchaseController@assetPrintView')->name('asset.print.view');
 	Route::get('/asset-print', 'User\PurchaseController@assetPrint')->name('asset.print');
 
@@ -134,9 +132,8 @@ Route::prefix('sale')->group(function()
  {
 	Route::get('/add-other-income', 'User\OtherIncomeController@addOtherIncome')->name('other.income');
 	Route::post('/save-other-income', 'User\OtherIncomeController@saveOtherIncome')->name('save.other.income');
-
-	
 	Route::get('/delete-other-income/{id}', 'User\OtherIncomeController@deleteOtherIncome')->name('delete.other.income');
+	Route::get('/other-income-save-direct', 'User\OtherIncomeController@otherIncomeSaveDirect')->name('other.income.save.direct');
 	Route::get('/other-income-print-view', 'User\OtherIncomeController@otherIncomePrintView')->name('other.income.print.view');
 	Route::get('/other-income-print', 'User\OtherIncomeController@otherIncomePrint')->name('other.income.print');
 
@@ -175,42 +172,38 @@ Route::prefix('sale')->group(function()
  //Return route
 Route::prefix('return')->group(function()
 {
+	//Return from customer
 	Route::get('/customer-return', 'User\ReturnController@customerReturn')->name('customer.return');
 	Route::get('/customerReturnSearchByInv/{invoiceNum}', 'User\ReturnController@customerReturnSearchByInv')->name('customer.return.search.inv');
 	Route::get('/customerReturnSearchByItem/{itemName}', 'User\ReturnController@customerReturnSearchByItem')->name('customer.return.search.item');
-	Route::post('/add-customer-return', 'User\ReturnController@addCustomerReturn')->name('add.customer.return');
-	Route::get('/save-customer-return', 'User\ReturnController@saveCustomerReturn')->name('save.customer.return');
+	Route::post('/save-customer-return', 'User\ReturnController@saveCustomerReturn')->name('save.customer.return');
 	Route::get('/delete-customer-return/{id}', 'User\ReturnController@deleteCustomerReturn')->name('delete.customer.return');
-
+	//Return to supplier
 	Route::get('/supplier-return', 'User\ReturnController@supplierReturn')->name('supplier.return');
-	Route::post('/add-supplier-return', 'User\ReturnController@addSupplierReturn')->name('add.supplier.return');
 	Route::get('/supplierReturnSearchByModel/{model}', 'User\ReturnController@supplierReturnSearchByModel')->name('supplier.return.search.model');
 	Route::get('/supplierReturnSearchByName/{itemName}', 'User\ReturnController@supplierReturnSearchByName')->name('supplier.return.search.name');
-	Route::get('/save-supplier-return', 'User\ReturnController@saveSupplierReturn')->name('save.supplier.return');
+	Route::post('/save-supplier-return', 'User\ReturnController@saveSupplierReturn')->name('save.supplier.return');
 	Route::get('/delete-supplier-return/{id}', 'User\ReturnController@deleteSupplierReturn')->name('delete.supplier.return');
-
-
+	//View all return
 	Route::get('/view-return', 'User\ReturnController@viewReturn')->name('view.return');
 });
 //End of return route
  
 //Accounting route
 Route::prefix('accounting')->group(function(){
-	Route::get('/view-balanceSheet', 'User\AccountingController@viewBalanceSheet')->name('view.balanceSheet');
-
 	Route::get('/view-profit-loss', 'User\AccountingController@viewProfitLoss')->name('view.profit.loss');
-
 	Route::get('/view-fixed-asset', 'User\AccountingController@viewFixedAsset')->name('view.fixed.asset');
-
 	Route::get('/view-receivable', 'User\AccountingController@viewReceivable')->name('view.receivable');
-
+	Route::get('/receivablePaid/{id}', 'User\AccountingController@receivablePaid')->name('receivablePaid');
 	Route::get('/view-payable', 'User\AccountingController@viewPayable')->name('view.payable');
+	Route::get('/payablePaid/{id}', 'User\AccountingController@payablePaid')->name('payablePaid');
 });
 //End of accounting route
 
 //Report route
 Route::prefix('report')->group(function(){
-	Route::get('/view-stock', 'User\ReportController@stockReport')->name('view.stock');
+	Route::get('/view-stock-report', 'User\ReportController@viewStockReport')->name('view.stock.report');
+	Route::get('/view-customer-report', 'User\ReportController@viewCustomerReport')->name('view.customer.report');
 });
 //End of report route
  
@@ -252,8 +245,14 @@ Route::prefix('component')->group(function()
 
 	Route::post('/save-depreciation', 'User\ComponentsController@saveDepreciation')->name('save.depreciation');
 	//End of depreciation route
+
+	
 });
 //End of component route group
 
+/*Lottery route is also defined here*/
+Route::get('/customer-lottery', 'User\ComponentsController@customerLottery')->name('customer.lottery');
+/*Route::get('/daterangeFetch_data', 'User\ComponentsController@fetch_data')->name('daterangeFetch_data');*/
+Route::post('/daterange/fetch_data', 'User\ComponentsController@fetch_data')->name('daterange.fetch_data');
 
 

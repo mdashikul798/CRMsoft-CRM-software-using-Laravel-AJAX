@@ -26,7 +26,7 @@ class SupplierController extends Controller
 	    	$supplier->address = $request->address;
 	    	$supplier->address_2 = $request->address_2;
 	    	$supplier->save();
-	    	return redirect('/supplier/add-supplier')->with('success', 'Supplier added successfully');
+	    	return back()->with('success', 'Supplier added successfully');
     	}catch(\Exception $e){
     		return back()->with('error', $e->getMessage());
     	}
@@ -34,7 +34,7 @@ class SupplierController extends Controller
     }
 
     public function viewSupplier(){
-    	$allSupplier = Supplier::orderBy('id', 'DESC')->get();
+    	$allSupplier = Supplier::orderBy('name', 'ASC')->get();
     	return view('user.pages.supplier.view', compact('allSupplier'));
     }
 

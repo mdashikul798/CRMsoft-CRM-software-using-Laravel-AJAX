@@ -63,11 +63,11 @@
 		                     </div>
 		                     <div class="form-group">
 		                        <label>Select Date</label>
-		                        <input type="date" name="date" class="form-control" placeholder="Enter Item Name" required>
+		                        <input type="date" name="date" class="form-control" required>
 		                     </div>
 		                     <div class="form-group" style="clear:both;">
 		                        <label>Salary TK.</label>
-		                        <input type="number" name="salary" class="form-control" placeholder="Enter Quantity" required>
+		                        <input type="number" name="salary" class="form-control" placeholder="Enter Salary" required>
 		                     </div>
 		                     <div class="form-group">
 		                        <div class="col-md-3 col-xl-3 col-sm-3 col-xs-6 form-check form-check-inline">
@@ -203,7 +203,7 @@
 		                     </div>
 		                     <div class="form-group">
 		                        <label>Amount Tk.</label>
-		                        <input type="number" name="amount" class="form-control" placeholder="Enter Quantity" required>
+		                        <input type="number" name="amount" class="form-control" placeholder="Enter Amount" required>
 		                     </div>
 
 		                     <div class="form-group">
@@ -403,7 +403,7 @@
 		                  <div class="col-md-6 col-xl-6 col-sm-12">
 		                  	<div class="form-group">
 		                        <label>Reference (optional)</label>
-		                        <input type="text" name="reference" class="form-control" placeholder="Reference">
+		                        <input type="text" name="reference" class="form-control" placeholder="Enter Reference">
 		                     </div>
 		                     <div class="form-group" style="clear:both;">
 		                        <label>Description (optional)</label>

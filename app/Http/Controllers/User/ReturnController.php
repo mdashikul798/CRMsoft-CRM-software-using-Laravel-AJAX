@@ -7,6 +7,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Model\User\Returns\CustomerReturn;
 use App\Model\User\Returns\SupplierReturn;
+use App\Model\User\Returns\AllReturn;
+use App\Model\User\Purchase\ProductPurchase;
+use App\Model\User\Sale\ViewSale;
+use App\Model\User\Sale\Sale;
 use Session;
 
 class ReturnController extends Controller
@@ -15,35 +19,36 @@ class ReturnController extends Controller
     	return view('user.pages.return.customerReturn');
     }
 
+    //Retriving data from 'view_sales', 'sales', 'product_purchases', 'all_purchases' table to view the 'customerReturn'
     public function customerReturnSearchByInv($invoiceNum){
     	if (empty($invoiceNum)) {
             return [];
         }
-        $employees = DB::table('view_sales')
-            ->join('sales', 'view_sales.sales_id', '=', 'sales.id')
-            ->select('view_sales.*', 'sales.customer_name', 'sales.item_code', 'sales.phone', 'sales.price', 'sales.quentity', 'sales.discount', 'sales.total')
-            ->where('view_sales.invoiceNum', 'LIKE', "$invoiceNum%")
+        $return = DB::table('sales')
+            ->leftjoin('all_purchases', 'sales.purchase_id', '=', 'all_purchases.purchase_id')
+            ->select('sales.*', 'all_purchases.item_name', 'all_purchases.item_code', 'all_purchases.supplier_name','all_purchases.supplier_phone', 'all_purchases.supplier_name', 'all_purchases.category_id')
+            ->where('sales.invoiceNum', 'LIKE', "$invoiceNum%")
             ->limit(25)
             ->get();
 
-        return $employees;
+        return $return;
     }
 
     public function customerReturnSearchByItem($itemName){
         if (empty($itemName)) {
             return [];
         }
-        $employees = DB::table('view_sales')
-            ->join('sales', 'view_sales.sales_id', '=', 'sales.id')
-            ->select('view_sales.*', 'sales.invoiceNum', 'sales.item_code', 'sales.customer_name', 'sales.phone', 'sales.price', 'sales.quentity', 'sales.discount', 'sales.total')
-            ->where('view_sales.item_name', 'LIKE', "$itemName%")
+        $employees = DB::table('sales')
+            ->leftjoin('all_purchases', 'sales.purchase_id', '=', 'all_purchases.purchase_id')
+            ->select('sales.*', 'all_purchases.item_code', 'all_purchases.item_name', 'all_purchases.category_id', 'all_purchases.supplier_name','all_purchases.supplier_phone')
+            ->where('all_purchases.item_name', 'LIKE', "$itemName%")
             ->limit(25)
             ->get();
 
         return $employees;
     }
 
-    public function addCustomerReturn(Request $request){
+    public function saveCustomerReturn(Request $request){
         $request->validate([
             'invoice_number' => 'required',
             'item_name' => 'required',
@@ -52,43 +57,47 @@ class ReturnController extends Controller
             'return_reason' => 'required',
             'return_amount' => 'required'
         ]);
-        $session_id = rand(40, 100);
-        $data = $request->input();
-        $request->session()->put('session_id', $data);
-        $token = $request->input('_token');
-
-        $return = new CustomerReturn();
-        $return->voucherNum = $request->invoice_number;
-        $return->item_name = $request->item_name;
-        $return->customer_name = $request->customer_name;
-        $return->sales_total = $request->sales_total;
-        $return->sales_date = $request->sales_date;
-        $return->reason = $request->return_reason;
-        $return->description = $request->description;
-        $return->return_amount = $request->return_amount;
-        $return->token = $token;
-        $return->save();
-
-        return redirect('return/customer-return')->with('success', 'Return added successfully');
-    }
-
-    public function saveCustomerReturn(Request $request){
-        $allreturn = CustomerReturn::orderBy('id', 'DESC')
-                ->where('token', Session('_token'))->get();
         try{
-            
-            foreach($allreturn as $return){
-                $return->status = '1';
-                $return->token = null;
-                $return->update();
+            $return = new CustomerReturn();
+            $return->purchase_id = $request->purchase_id;
+            $return->voucherNum = $request->invoice_number;
+            $return->item_name = $request->item_name;
+            $return->customer_name = $request->customer_name;
+            $return->sales_total = $request->sales_total;
+            $return->sales_date = $request->sales_date;
+            $return->reason = $request->return_reason;
+            $return->return_quentity = $request->return_quentity;
+            $return->description = $request->description;
+            $return->return_amount = $request->return_amount;
+            $return->save();
+
+            //Changing the 'sales' table's 'quentity, total and discount'
+            $allProduct = Sale::where('invoiceNum', $return->voucherNum)->get();
+            foreach ($allProduct as $product) {
+                $oldDis = $product->discount / $product->quentity;
+                $qty = $product->quentity - $return->return_quentity;
+                $product->quentity = $qty;
+                $product->discount = $oldDis * $qty;
+                $product->total = $product->price * $qty;
+                $product->update();
+
+                if($product->quentity < 1){
+                    $product->delete();
+                }
             }
-           
+
+            //Return also save in 'all_returns' table
+            $allRetunt = new AllReturn();
+            $allRetunt->customer_ret_id = $return->id;
+            $allRetunt->save();
+
         }catch(\Exception $e){
             return redirect('return/customer-return')->with('error', $e->getMessage());
         }
+        return redirect('return/customer-return')->with('success', 'Return added successfully');
         Session::forget('session_id');
-        return redirect('return/customer-return')->with('success', 'Return saved successfully');
     }
+
 
     public function deleteCustomerReturn($id){
         $allreturn = CustomerReturn::where('token', Session('_token'))->get();
@@ -111,10 +120,9 @@ class ReturnController extends Controller
         if (empty($model)) {
             return [];
         }
-        $employees = DB::table('all_purchases')
-            ->join('product_purchases', 'all_purchases.purchase_id', '=', 'product_purchases.id')
-            ->select('all_purchases.*', 'product_purchases.item_name', 'product_purchases.supplier_name', 'product_purchases.supplier_phone', 'product_purchases.price', 'product_purchases.quentity', 'product_purchases.discount', 'product_purchases.total')
-            ->where('all_purchases.item_code', 'LIKE', "$model%")
+        $employees = DB::table('product_purchases')
+            ->select('product_purchases.*')
+            ->where('product_purchases.item_code', 'LIKE', "$model%")
             ->limit(25)
             ->get();
 
@@ -125,59 +133,62 @@ class ReturnController extends Controller
         if (empty($itemName)) {
             return [];
         }
-        $employees = DB::table('all_purchases')
-            ->join('product_purchases', 'all_purchases.purchase_id', '=', 'product_purchases.id')
-            ->select('all_purchases.*', 'product_purchases.item_code', 'product_purchases.supplier_name', 'product_purchases.supplier_phone', 'product_purchases.price', 'product_purchases.quentity', 'product_purchases.discount', 'product_purchases.total')
-            ->where('all_purchases.item_name', 'LIKE', "$itemName%")
+        $employees = DB::table('product_purchases')
+            ->select('product_purchases.*')
+            ->where('product_purchases.item_name', 'LIKE', "$itemName%")
             ->limit(25)
             ->get();
 
         return $employees;
     }
 
-    public function addSupplierReturn(Request $request){
+    public function saveSupplierReturn(Request $request){
         $request->validate([
             'item_code' => 'required',
             'item_name' => 'required',
             'reason' => 'required',
             'return_amount' => 'required'
         ]);
-        $session_id = rand(40, 100);
-        $data = $request->input();
-        $request->session()->put('session_id', $data);
-        $token = $request->input('_token');
-
+        try{
         $return = new SupplierReturn();
+        $return->invoiceNum = $request->invoiceNum;
         $return->item_code = $request->item_code;
         $return->item_name = $request->item_name;
         $return->supplier_name = $request->supplier_name;
+        $return->return_quentity = $request->return_quentity;
         $return->purchase_total = $request->purchase_total;
         $return->purchase_date = $request->date;
         $return->reason = $request->reason;
         $return->description = $request->description;
         $return->return_amount = $request->return_amount;
-        $return->token = $token;
+        $return->status = '1';
         $return->save();
 
-        return redirect('return/supplier-return')->with('success', 'Return added successfully');
-    }
+        $allProduct = ProductPurchase::where('invoiceNum', $return->invoiceNum)->get();
+            foreach ($allProduct as $product) {
+                $oldDis = $product->discount / $product->quentity;
+                $qty = $product->quentity - $return->return_quentity;
+                
+                $product->quentity = $qty;
+                $product->discount = $oldDis * $qty;
+                $product->total = $product->price * $qty;
+                $product->update();
 
-    public function saveSupplierReturn(Request $request){
-        $allreturn = SupplierReturn::orderBy('id', 'DESC')
-                ->where('token', Session('_token'))->get();
-        try{
-            
-            foreach($allreturn as $return){
-                $return->status = '1';
-                $return->token = null;
-                $return->update();
+                if($product->quentity < 1){
+                    $product->delete();
+                }
             }
-           
+
+        //Return also save in 'all_returns' table
+        $allRetunt = new AllReturn();
+        $allRetunt->supplier_ret_id = $return->id;
+        $allRetunt->save();
+
         }catch(\Exception $e){
             return redirect('return/supplier-return')->with('error', $e->getMessage());
         }
+        return redirect('return/supplier-return')->with('success', 'Return added successfully');
         Session::forget('session_id');
-        return redirect('return/supplier-return')->with('success', 'Return saved successfully');
     }
 
     public function deleteSupplierReturn($id){
@@ -193,8 +204,10 @@ class ReturnController extends Controller
     }
 
     public function viewReturn(){
-        $customerReturn = CustomerReturn::orderBy('created_at', 'DESC')
-                        ->where('status', '1')->get();
+        $customerReturn = DB::table('customer_returns')
+                ->select('customer_returns.*')
+                ->where('status', '1')
+                ->get();
     	return view('user.pages.return.view', compact('customerReturn'));
     }
 }

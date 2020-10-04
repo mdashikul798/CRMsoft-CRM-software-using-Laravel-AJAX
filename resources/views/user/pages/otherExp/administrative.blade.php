@@ -2,7 +2,7 @@
 @section('content')
 <section class="content-header">
    <div class="header-icon">
-      <i class="fa fa-list"></i>
+      <i class="fa fa-sticky-note-o"></i>
    </div>
    <div class="header-title">
       <h1>Administrative Expenses</h1>
@@ -56,11 +56,11 @@
 
         				  <div class="form-group">
         				    <label for="category">Amount</label>
-        				    <input type="number" name="amount" class="form-control" id="category" aria-describedby="category" placeholder="Enter category">
+        				    <input type="number" name="amount" class="form-control" id="category" aria-describedby="category" placeholder="Enter Amount">
         				  </div>
         				  <div class="form-group">
         				    <label for="category">Reference Number</label>
-        				    <input type="text" name="reference" class="form-control" id="category" aria-describedby="category" placeholder="Enter category">
+        				    <input type="text" name="reference" class="form-control" id="category" aria-describedby="category" placeholder="Enter Reference">
         				  </div>
                 </div>
                 <div class="col-md-6 col-xl-6 col-sm-12">

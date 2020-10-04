@@ -62,7 +62,7 @@ class OperatingController extends Controller
     	$operating->token = $token;
     	$operating->save();
 
-    	return redirect('expense/operating-exp')->with('success', 'Salary added successfully');
+    	return redirect('expense/operating-exp');
     }
 
     public function addOfficeRent(Request $request){
@@ -90,7 +90,7 @@ class OperatingController extends Controller
     	$operating->token = $token;
     	$operating->save();
 
-    	return redirect('expense/operating-exp')->with('success', 'Office rent added successfully');
+    	return redirect('expense/operating-exp');
     }
 
     public function addElectricityBill(Request $request){
@@ -118,7 +118,7 @@ class OperatingController extends Controller
     	$operating->token = $token;
     	$operating->save();
 
-    	return redirect('expense/operating-exp')->with('success', 'Electricity bill added successfully');
+    	return redirect('expense/operating-exp');
     }
 
     public function addNightGuardBill(Request $request){
@@ -146,7 +146,7 @@ class OperatingController extends Controller
     	$operating->token = $token;
     	$operating->save();
 
-    	return redirect('expense/operating-exp')->with('success', 'Night guard bill added successfully');
+    	return redirect('expense/operating-exp');
     }
 
     public function addInternetBill(Request $request){
@@ -203,7 +203,7 @@ class OperatingController extends Controller
     	$operating->token = $token;
     	$operating->save();
 
-    	return redirect('expense/operating-exp')->with('success', 'Other expense added successfully');
+    	return redirect('expense/operating-exp');
     }
 
     public function deleteOperatingExp($id){
@@ -233,7 +233,7 @@ class OperatingController extends Controller
             return redirect('/expense/operating-exp')->with('error', $e->getMessage());
         }
         Session::forget('session_id');
-        return redirect('/expense/operating-exp')->with('success', 'All expense saved successfully');
+        return redirect('/expense/operating-exp');
     }
 
     public function viewOperating(){

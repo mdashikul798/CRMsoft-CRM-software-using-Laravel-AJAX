@@ -9,6 +9,7 @@ use App\Model\User\Components\Staff;
 use App\Model\User\Components\Meter;
 use App\Model\User\Components\Branch;
 use App\Model\User\Components\Depreciation;
+use DB;
 
 class ComponentsController extends Controller
 {
@@ -169,13 +170,6 @@ class ComponentsController extends Controller
         if (empty($assetName)) {
             return [];
         }
-        /*$itemName = DB::table('depreciations')
-            ->select('depreciations.*', 'depreciations.purchase_price', 'depreciations.accumulated', 'depreciations.present_value')
-            ->where('depreciations.asset_name', 'LIKE', "$itemName%")
-            ->limit(25)
-            ->get();
-
-        return $itemName;*/
         $itemName = Depreciation::where('depreciations.asset_name', 'LIKE', "$assetName%")
             ->limit(25)
             ->get();
@@ -184,9 +178,52 @@ class ComponentsController extends Controller
             
     }
 
-    public function saveDepreciation(Request $request, $id){
+    public function saveDepreciation(Request $request){
         $request->validate([
+            'asset_name' => 'required',
             'percent' => 'required'
                 ]);
+        $id = $request->input('id');
+        $depreciation = Depreciation::where('id', $id)->get();
+        try{
+            foreach ($depreciation as $dep) {
+                $dep->percent = $request->percent;
+                $dep->accumulated = $request->accumulated;
+                $dep->present_value = $request->present_value;
+                $dep->depreciation = $request->current_year;
+                $dep->save();
+            }
+            
+            return redirect('/component/add-depreciation')->with('success', 'Depreciation addedd successfully');
+        }catch(\Exception $e){
+            return redirect('/component/add-depreciation')->with('error', $e->getMessage());
+        }
+    }
+
+    public function customerLottery(){
+        $allCustomer = DB::table('sales')->orderBy('total', 'DESC')
+             ->leftjoin('product_purchases', 'sales.purchase_id', 'product_purchases.id')
+             ->select('sales.*', 'product_purchases.item_name', 'product_purchases.item_code')
+             ->where('sales.status', '1')
+             ->limit('20')
+             ->get();
+        return view('user.pages.components.lottery', compact('allCustomer'));
+    }
+
+    function fetch_data(Request $request){
+     if($request->ajax()){
+      if($request->from_date != '' && $request->to_date != ''){
+       $data = DB::table('sales')
+         ->whereBetween('created_at', array($request->from_date, $request->to_date))
+         ->get();
+      }else{
+       $data = DB::table('sales')->orderBy('total', 'desc')
+            ->join('product_purchases', 'sales.purchase_id', 'product_purchases.id')
+            ->select('sales.*', 'product_purchases.item_name', 'product_purchases.item_code')
+             ->where('sales.status', '1')
+            ->get();
+      }
+      echo json_encode($data);
+     }
     }
 }

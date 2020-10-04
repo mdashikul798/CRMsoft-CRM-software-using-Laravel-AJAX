@@ -4,9 +4,9 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Model\User\Category;
+use App\Model\User\Purchase\ProductPurchase;
+use App\Model\User\Purchase\AssetPurchase;
 use App\Model\User\Sale\Sale;
-use App\Model\User\Sale\OtherSale;
 use App\Model\User\Sale\AssetSale;
 use App\Model\User\Sale\ViewSale;
 use App\Model\User\Accounting\Receivable;
@@ -19,10 +19,10 @@ use DB;
     * SaleController
     *
     * There is some route under the 'sale activities', that are
-    * 'addSale(product)', 'otherSale', 'assetSale'
+    * 'addSale(product)', 'assetSale'
     * 
     * This routes is first adding data to there own tables like
-    * 'add_sales(product sales table)', 'other_sales',
+    * 'add_sales(product sales table)',
     * 'asset_sales' tables with 'token' & 'status=0', after 
     * adding the data when pressing 'pring' button it will
     * change the 'status=1' and the 'token' will be 'null'
@@ -37,17 +37,15 @@ class SaleController extends Controller
 {
     //Route for the product sell
     public function saleProduct(){
-        $allCategory = Category::orderBy('category_name', 'ASC')->get();
-    	return view('user.pages.sales.product', compact('allCategory'));
+        $allPurchase = ProductPurchase::orderBy('item_name', 'ASC')->get();
+    	return view('user.pages.sales.product', compact('allPurchase'));
     }
+
 
     public function addSale(Request $request){
         $request->validate([
-            'category_name' => 'required',
-            'item_name' => 'required',
             'customer_name' => 'required',
             'quentity' => 'required',
-            'customer_phone' => 'required',
             'price' => 'required|integer'
         ]);
         try{
@@ -61,26 +59,33 @@ class SaleController extends Controller
             $invoiceNum = substr(str_shuffle($permitted_chars), 0, 8);
 
             $sale = new Sale();
-            $sale->category_id = $request->category_name;
-            $sale->invoiceNum = $invoiceNum;
-            $sale->item_code = $request->item_code;
-            $sale->item_name = $request->item_name;
-            $sale->customer_name = $request->customer_name;
-            $sale->bank_name = $request->bank_name;
-            $sale->phone = $request->customer_phone;
-            $sale->quentity = $request->quentity;
-            $sale->amountdue = $request->amountdue;
-            $sale->price = $request->price;
-            $sale->discount = $request->discount * $request->quentity;
-            $sale->total = $request->total;
-            $sale->token = $token;
-            $sale->save();
+            
+            //Checking the remaining stock of the 'product_purchases' table
+            $storeQty = ProductPurchase::find($request->purchase_id);
+            if($storeQty->quentity < $request->quentity){
+                return redirect('/sale/product-sale')->with('error', 'Stock exceed! Remaining (' .$storeQty->item_name . ' = ' .  $storeQty->quentity .')');
+                return back();
+            }else{
+                $sale->invoiceNum = $invoiceNum;
+                $sale->purchase_id = $request->purchase_id;
+                $sale->customer_name = $request->customer_name;
+                $sale->bank_name = $request->bank_name;
+                $sale->phone = $request->customer_phone;
+                $sale->quentity = $request->quentity;
+                $sale->amountdue = $request->amountdue;
+                $sale->price = $request->price;
+                $sale->discount = $request->discount * $request->quentity;
+                $sale->total = $request->total;
+                $sale->token = $token;
+                $sale->save();
+            }
+            
 
         }catch(\Exception $e){
             return redirect('/sale/product-sale')->with('error', $e->getMessage());
         }
 
-        return redirect('/sale/product-sale')->with('success', 'Sale added successfully');
+        return redirect('/sale/product-sale');
     }
 
     public function addSaleQty(Request $request, $id){
@@ -129,38 +134,125 @@ class SaleController extends Controller
         return back();
     }
 
-    public function productSaleView(){
-        $allSale = Sale::orderBy('id', 'DESC')
-                ->where('token', Session('_token'))->get();
-        return view('user.pages.sales.product.productView', compact('allSale'));
-    }
+    public function productSaleSave(Request $request){
+        //Retriving data from 'sales' & 'product_purchases' table to view the 'productSalePrint' invoice
+        $allSale = DB::table('sales')->orderBy('id', 'DESC')
+             ->leftjoin('product_purchases', 'sales.purchase_id', 'product_purchases.id')
+             ->select('sales.*', 'sales.customer_name', 'sales.phone', 'sales.invoiceNum', 'product_purchases.item_name', 'product_purchases.item_code')
+             ->where('sales.token', Session('_token'))
+             ->get();
 
-    public function productSalePrint(Request $request){
-        $allSale = Sale::orderBy('id', 'DESC')
+        $saleUpdateTable = Sale::orderBy('id', 'DESC')
                 ->where('token', Session('_token'))->get();
-        $viewSale = new ViewSale();
-        $allReceivable = new Receivable();
+        
         try{
-            $pdf = PDF::loadView('user.pages.sales.product.invoice', compact('allSale'));
-            $createdInv = $allSale['0']['invoiceNum'];
+            $createdInv = $saleUpdateTable['0']['invoiceNum'];
+            foreach($saleUpdateTable as $sale){
+                $viewSale = new ViewSale();
+                $allReceivable = new Receivable();
 
-            foreach($allSale as $sale){
+                //Update the 'product_purchase' table 'quentity'
+                $storeQty = ProductPurchase::find($sale->purchase_id);
+                $oldDiscount = $storeQty->discount / $storeQty->quentity;
+                $storeQty->quentity = $storeQty->quentity - $sale->quentity;
+                $storeQty->discount = $oldDiscount * $storeQty->quentity;
+                $storeQty->total = $storeQty->price * $storeQty->quentity - $storeQty->discount;
+                $storeQty->update();
+
+                /*After updating data to the 'sales' table it will also save the data to the 'view_sales' table*/
+                $viewSale->sales_id = $sale->id;
+                $viewSale->invoiceNum = $createdInv;
+                $viewSale->purchase_id = $sale->purchase_id;
+                $viewSale->status = '1';
+                $viewSale->save();
+
+                //'receivable' table will get data from here, if there is
+                if(!empty($sale->amountdue)){
+                    $allReceivable->sales_id = $sale->id;
+                    $allReceivable->purchase_id = $sale->purchase_id;
+                    $allReceivable->amountdue = $sale->amountdue;
+                    $allReceivable->save();
+                }
+                //If quentity of 'product_purchase' table is less-1(<1) it will delete the id
+                if($storeQty->quentity < 1){
+                    $storeQty->delete();
+                }
+
                 $sale->invoiceNum = $createdInv;
                 $sale->token = null;
                 $sale->status = '1';
                 $sale->update();
+            }
 
-    /*After updating data to the 'sale' table it will also save the data to the 'view_sales' table*/
+        }catch(\Exception $e){
+            return redirect('/sale/product-sale')->with('error', $e->getMessage());
+        }
+        Session::forget('session_id');
+        return redirect('/sale/product-sale')->with('success', 'Sales added successfully');
+    }
 
+    public function productSaleView()
+    {
+        $allSale = DB::table('sales')->orderBy('id', 'DESC')
+             ->leftjoin('product_purchases', 'sales.purchase_id', 'product_purchases.id')
+             ->select('sales.*', 'sales.customer_name', 'sales.phone', 'sales.invoiceNum', 'product_purchases.item_name', 'product_purchases.item_code')
+             ->where('sales.token', Session('_token'))
+             ->get();
+
+        return view('user.pages.sales.product.productView', compact('allSale'));
+    }
+
+    public function productSalePrint(Request $request){
+        //Retriving data from 'sales' & 'product_purchases' table to view the 'productSalePrint' invoice
+        $allSale = DB::table('sales')->orderBy('id', 'DESC')
+             ->leftjoin('product_purchases', 'sales.purchase_id', 'product_purchases.id')
+             ->select('sales.*', 'sales.customer_name', 'sales.phone', 'sales.invoiceNum', 'product_purchases.item_name', 'product_purchases.item_code')
+             ->where('sales.token', Session('_token'))
+             ->get();
+
+        $saleUpdateTable = Sale::orderBy('id', 'DESC')
+                ->where('token', Session('_token'))->get();
+
+        try{
+            $pdf = PDF::loadView('user.pages.sales.product.invoice', compact('allSale'));
+            $createdInv = $saleUpdateTable['0']['invoiceNum'];
+
+            foreach($saleUpdateTable as $sale){
+                //'receivable' table will get data from here, if there is
+                $allReceivable = new Receivable();
+                if(!empty($sale->amountdue)){
+                    $allReceivable->sales_id = $sale->id;
+                    $allReceivable->purchase_id = $sale->purchase_id;
+                    $allReceivable->amountdue = $sale->amountdue;
+                    $allReceivable->save();
+                }
+
+                //Update the 'product_purchase' table 'quentity'
+                $storeQty = ProductPurchase::find($sale->purchase_id);
+                $oldDiscount = $storeQty->discount / $storeQty->quentity;
+                $storeQty->quentity = $storeQty->quentity - $sale->quentity;
+                $storeQty->discount = $oldDiscount * $storeQty->quentity;;
+                $storeQty->total = $storeQty->price * $storeQty->quentity - $storeQty->discount;
+                $storeQty->update();
+
+                /*After updating data to the 'sales' table it will also save the data to the 'view_sales' table*/
+                $viewSale = new ViewSale();
                 $viewSale->sales_id = $sale->id;
                 $viewSale->invoiceNum = $createdInv;
-                $viewSale->item_name = $sale->item_name;
+                $viewSale->purchase_id = $sale->purchase_id;
                 $viewSale->status = '1';
                 $viewSale->save();
 
-                $allReceivable->sales_id = $sale->id;
-                $allReceivable->amountdue = $sale->amountdue;
-                $allReceivable->save();
+                
+                //If quentity of 'product_purchase' table is less-1(<1) it will delete the id
+                if($storeQty->quentity < 1){
+                    $storeQty->delete();
+                }
+
+                $sale->invoiceNum = $createdInv;
+                $sale->token = null;
+                $sale->status = '1';
+                $sale->update();
             }
             $pdf->stream('invoice.pdf');
             Session::forget('session_id');
@@ -168,17 +260,20 @@ class SaleController extends Controller
         }catch(\Exception $e){
             return redirect('/sale/product-sale')->with('error', $e->getMessage());
         }
+        
         return redirect('/sale/product-sale');
     }
     //End of product sell route
 
-    //Route for otherSale
-    public function otherSale(){
-    	return view('user.pages.sales.otherSale');
+    //Route for asset sale
+    public function assetSale(){
+        $allAsset = AssetPurchase::orderBy('item_name', 'ASC')
+                ->where('status', '1')->get();
+    	return view('user.pages.sales.assetSale', compact('allAsset'));
     }
 
-    public function addOtherSale(Request $request){
-        $otherSale = new OtherSale();
+    public function addAssetSale(Request $request){
+        $assetSales = new AssetSale();
         $request->validate([
             'item_name' => 'required',
             'customer_name' => 'required',
@@ -195,45 +290,38 @@ class SaleController extends Controller
             $permitted_chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
             $invoiceNum = substr(str_shuffle($permitted_chars), 0, 8);
 
-            $otherSale->invoiceNum = $invoiceNum;
-            $otherSale->item_name = $request->item_name;
-            $otherSale->customer_name = $request->customer_name;
-            $otherSale->price = $request->price;
-            $otherSale->amountDue = $request->amountDue;
-            $otherSale->description = $request->description;
-            $otherSale->total = $request->total;
-            $otherSale->token = $token;
-            $otherSale->save();
+            $assetSales->invoiceNum = $invoiceNum;
+            $assetSales->item_name = $request->item_name;
+            $assetSales->customer_name = $request->customer_name;
+            $assetSales->price = $request->price;
+            $assetSales->amountDue = $request->amountDue;
+            $assetSales->description = $request->description;
+            $assetSales->total = $request->total;
+            $assetSales->token = $token;
+            $assetSales->save();
         }catch(\Exception $e){
-            return redirect('/sale/other-sale')->with('error', $e->getMessage());
+            return redirect('/sale/asset-sale')->with('error', $e->getMessage());
         }
-        return back()->with('success', 'Sale added successfully');
+        return redirect('/sale/asset-sale');
     }
 
-    public function deleteOtherSale($id){
-        $allOtherSale = OtherSale::where('token', Session('_token'))->get();
-        $otherSale = OtherSale::find($id);
-        if(count($allOtherSale) <= 1){
-            $otherSale->delete();
+    public function deleteAssetSale($id){
+        $allAssetSale = AssetSale::where('token', Session('_token'))->get();
+        $assetSales = AssetSale::find($id);
+        if(count($allAssetSale) <= 1){
+            $assetSales->delete();
             Session::forget('session_id');
             return back();
         }
-        $otherSale->delete();
+        $assetSales->delete();
         return back();
     }
 
-    public function otherSaleView(){
-        $allSale = OtherSale::orderBy('id', 'DESC')
+    public function assetSaleSave(Request $request){
+        $allSale = AssetSale::orderBy('id', 'DESC')
                 ->where('token', Session('_token'))->get();
-        return view('user.pages.sales.other.otherView', compact('allSale'));
-    }
-
-    public function otherSalePrint(Request $request){
-        $allSale = OtherSale::orderBy('id', 'DESC')
-                ->where('token', Session('_token'))->get();
-        $viewSale = new ViewSale();
+        
         try{
-            $pdf = PDF::loadView('user.pages.sales.other.invoice', compact('allSale'));
             $createdInv = $allSale['0']['invoiceNum'];
             foreach($allSale as $sale){
                 $sale->invoiceNum = $createdInv;
@@ -241,72 +329,12 @@ class SaleController extends Controller
                 $sale->status = '1';
                 $sale->update();
 
-    /*After updating data to the 'sale' table it will also save the data to the 'view_sales' table*/
-    
-                $viewSale->sales_id = $sale->id;
-                $viewSale->invoiceNum = $createdInv;
-                $viewSale->item_name = $sale->item_name;
-                $viewSale->status = '1';
-                $viewSale->save();
             }
-            $pdf->stream('invoice.pdf');
             Session::forget('session_id');
-            return $pdf->stream('invoice.pdf');
-        }catch(\Exception $e){
-            return redirect('/sale/other-sale')->with('error', $e->getMessage());
-        }
-        return redirect('/sale/other-sale');
-    }
-    //End of other sale
-
-    //Route for asset sale
-    public function assetSale(){
-    	return view('user.pages.sales.assetSale');
-    }
-
-    public function addAssetSale(Request $request){
-        $otherSale = new AssetSale();
-        $request->validate([
-            'item_name' => 'required',
-            'customer_name' => 'required',
-            'price' => 'required'
-        ]);
-
-        try{
-            $session_id = rand(40, 100);
-            $data = $request->input();
-            $request->session()->put('session_id', $data);
-            $token = $request->input('_token');
-
-            //creating random invoice number
-            $permitted_chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            $invoiceNum = substr(str_shuffle($permitted_chars), 0, 8);
-
-            $otherSale->invoiceNum = $invoiceNum;
-            $otherSale->item_name = $request->item_name;
-            $otherSale->customer_name = $request->customer_name;
-            $otherSale->price = $request->price;
-            $otherSale->amountDue = $request->amountDue;
-            $otherSale->description = $request->description;
-            $otherSale->total = $request->total;
-            $otherSale->token = $token;
-            $otherSale->save();
         }catch(\Exception $e){
             return redirect('/sale/asset-sale')->with('error', $e->getMessage());
         }
-        return back()->with('success', 'Asset sale added successfully');
-    }
-
-    public function deleteAssetSale($id){
-        $allOtherSale = AssetSale::where('token', Session('_token'))->get();
-        $otherSale = AssetSale::find($id);
-        if(count($allOtherSale) <= 1){
-            $otherSale->delete();
-            Session::forget('session_id');
-            return back();
-        }
-        $otherSale->delete();
-        return back();
+        return redirect('/sale/asset-sale')->with('success', 'Asset saved successfully');
     }
 
     public function assetSaleView(){
@@ -315,10 +343,10 @@ class SaleController extends Controller
         return view('user.pages.sales.asset.assetView', compact('allSale'));
     }
 
+    
     public function assetSalePrint(Request $request){
         $allSale = AssetSale::orderBy('id', 'DESC')
                 ->where('token', Session('_token'))->get();
-        $viewSale = new ViewSale();
         try{
             $pdf = PDF::loadView('user.pages.sales.asset.invoice', compact('allSale'));
             $createdInv = $allSale['0']['invoiceNum'];
@@ -327,13 +355,6 @@ class SaleController extends Controller
                 $sale->token = null;
                 $sale->status = '1';
                 $sale->update();
-
-    /*After updating data to the 'sale' table it will also save the data to the 'view_sales' table*/
-                $viewSale->sales_id = $sale->id;
-                $viewSale->invoiceNum = $createdInv;
-                $viewSale->item_name = $sale->item_name;
-                $viewSale->status = '1';
-                $viewSale->save();
             }
             $pdf->stream('invoice.pdf');
             Session::forget('session_id');
@@ -346,29 +367,18 @@ class SaleController extends Controller
 
     //Functions for view all sales
     public function viewProductSale(){
-        $allSales = DB::table('view_sales')->orderBy('id', 'DESC')
-                ->join('sales', 'view_sales.sales_id', '=', 'sales.id')
-                ->select('view_sales.*', 'sales.customer_name', 'sales.phone', 'sales.price', 'sales.quentity', 'sales.discount', 'sales.total')
-                ->limit(10)
+        $allSales = DB::table('sales')->orderBy('id', 'DESC')
+                ->join('all_purchases', 'sales.purchase_id', '=', 'all_purchases.id')
+                ->select('sales.*', 'all_purchases.item_name', 'all_purchases.item_code')
+                ->where('sales.status', '1')
                 ->get();
-                
     	return view('user.pages.sales.product.allProductView', compact('allSales'));
     }
 
-    public function viewOtherSale(){
-        $allSales = DB::table('view_sales')->orderBy('id', 'DESC')
-                ->join('other_sales', 'view_sales.sales_id', '=', 'other_sales.id')
-                ->select('view_sales.*', 'other_sales.invoiceNum', 'other_sales.customer_name', 'other_sales.description', 'other_sales.price', 'other_sales.total')
-                ->get();
-
-        return view('user.pages.sales.other.allOtherSale', compact('allSales'));
-    }
-
     public function viewAssetSale(){
-        $allSales = DB::table('view_sales')->orderBy('id', 'DESC')
-                ->join('asset_sales', 'view_sales.sales_id', '=', 'asset_sales.id')
-                ->select('view_sales.*', 'asset_sales.invoiceNum', 'asset_sales.customer_name', 'asset_sales.description', 'asset_sales.price', 'asset_sales.total')
-                ->get();
+        $allSales = AssetSale::orderBy('id', 'ASC')
+                    ->where('status', '1')
+                    ->get();
 
         return view('user.pages.sales.asset.allAssetSale', compact('allSales'));
     }

@@ -93,7 +93,7 @@
 	                           <td>{{ $bank->account_name }}</td>
 	                           <td>{{ $bank->account_number }}</td>
 	                           <td>
-	                              <input {{ $bank->status ==1 ? 'checked':''}} id="bankStatus" data-id="{{ $bank->id}}" type="checkbox" data-toggle="toggle" data-on="Active" data-off="Inactive">
+	                              <input {{ $bank->status ==1 ? 'checked':''}} id="bankStatus" data-id="{{ $bank->id}}" type="checkbox" data-toggle="toggle" data-on="Active" data-size="mini" data-off="Inactive">
 	                           </td>
 	                           <td>
 	                              <a href="{{ route('deleteBankAccount', $bank->id) }}" class="btn btn-danger btn-sm" id="delete"><i class="fa fa-trash-o"></i> </a>

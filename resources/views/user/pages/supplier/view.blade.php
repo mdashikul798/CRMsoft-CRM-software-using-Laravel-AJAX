@@ -2,7 +2,7 @@
 @section('content')
 <section class="content-header">
    <div class="header-icon">
-      <i class="fa fa-list"></i>
+      <i class="fa fa-users"></i>
    </div>
    <div class="header-title">
       <h1>All Supplier</h1>
@@ -46,16 +46,18 @@
                            <th>Action</th>
                         </tr>
                      </thead>
+
                      @foreach($allSupplier as $supplier)
                      <tbody class="tbldata">
                         <tr>
-                           <td>{{ $supplier->id }}</td>
+                           <td style="display:none;">{{ $supplier->id }}</td>
+                           <td>{{ $loop->index +1 }}</td>
                            <td>{{ $supplier->name }}</td>
                            <td>{{ $supplier->phone }}</td>
                            <td>{{ $supplier->email }}</td>
                            <td>{{ $supplier->address }}</td>
                            <td>
-                              <input {{ $supplier->status == 1 ? 'checked' : ''}} id="supplierStatus" data-id="{{ $supplier->id }}" data-on="Active" data-off="Inactive" data-toggle="toggle" type="checkbox">
+                              <input {{ $supplier->status == 1 ? 'checked' : ''}} id="supplierStatus" data-id="{{ $supplier->id }}" data-on="Active" data-off="Inactive" data-toggle="toggle" type="checkbox" data-size="mini">
                            </td>
                            <td>
                               <a href="#" class="btn btn-add btn-sm edit_supplier"><i class="fa fa-pencil"></i></a>
@@ -83,42 +85,44 @@
             <div class="modal-body">
                <div class="row">
                   <div class="col-md-12">
-                     <form class="form-horizontal" id="sample_form">
-                        <fieldset>
-                           <!-- Text input-->
-                           <div class="col-md-12 form-group">
-                              <label class="control-label">Supplier Name:</label>
-                              <input type="text" placeholder="Category Name" class="form-control">
-                           </div>
-                           <div class="col-md-12 form-group">
-                              <label class="control-label">Supplier Phone</label>
-                              <input type="text" placeholder="Category Name" class="form-control">
-                           </div>
-                           <div class="col-md-12 form-group">
-                              <label class="control-label">Email (optional)</label>
-                              <input type="text" placeholder="Category Name" class="form-control">
-                           </div>
-                           <div class="col-md-12 form-group">
-                              <label class="control-label">Supplier Address</label>
-                              <input type="text" placeholder="Category Name" class="form-control">
-                           </div>
-                           <div class="col-md-12 form-group">
-                              <label class="control-label">Address-2 (optional)</label>
-                              <input type="text" placeholder="Category Name" class="form-control">
-                           </div>
-                           <div class="col-md-12 form-group user-form-group">
-                              <div class="pull-right">
-                                 <button type="button" class="btn btn-danger btn-sm">Cancel</button>
-                                 <button type="submit" class="btn btn-add btn-sm">Save</button>
+                     <div class="form-horizontal" id="sample_form">
+                        <form action="{{ route('save.supplier') }}" method="post">
+                           @csrf
+                           <fieldset>
+                              <!-- Text input-->
+                              <div class="col-md-12 form-group">
+                                 <label class="control-label">Supplier Name:</label>
+                                 <input type="text" name="name" placeholder="Category Name" class="form-control" required>
                               </div>
-                           </div>
-                        </fieldset>
-                     </form>
+                              <div class="col-md-12 form-group">
+                                 <label class="control-label">Supplier Phone</label>
+                                 <input type="text" name="phone" placeholder="Category Name" class="form-control" required>
+                              </div>
+                              <div class="col-md-12 form-group">
+                                 <label class="control-label">Email (optional)</label>
+                                 <input type="text" name="email" placeholder="Category Name" class="form-control">
+                              </div>
+                              <div class="col-md-12 form-group">
+                                 <label class="control-label">Supplier Address</label>
+                                 <input type="text" name="address" placeholder="Category Name" class="form-control">
+                              </div>
+                              <div class="col-md-12 form-group">
+                                 <label class="control-label">Address-2 (optional)</label>
+                                 <input type="text" name="address_2" placeholder="Category Name" class="form-control">
+                              </div>
+                              <div class="col-md-12 form-group user-form-group">
+                                 <div class="pull-right">
+                                    <button type="submit" class="btn btn-add btn-sm">Save</button>
+                                 </div>
+                              </div>
+                           </fieldset>
+                        </form>
+                     </div>
                   </div>
                </div>
             </div>
             <div class="modal-footer">
-               <button type="button" class="btn btn-danger pull-left" data-dismiss="modal">Close</button>
+               <button type="button" class="btn btn-danger pull-left" data-dismiss="modal" data-dismiss="modal">Close</button>
             </div>
          </div>
          <!-- /.modal-content -->
@@ -162,7 +166,7 @@
                               </div>
                               <div class="col-md-12 form-group user-form-group">
                                  <div class="pull-right">
-                                    <button type="button" class="btn btn-danger btn-sm">Cancel</button>
+                                    <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal">Cancel</button>
                                     <button type="submit" class="btn btn-add btn-sm">Save</button>
                                  </div>
                               </div>

@@ -2,11 +2,11 @@
 @section('content')
 <section class="content-header">
    <div class="header-icon">
-      <i class="fa fa-sticky-note-o"></i>
+      <i class="fa fa-shopping-basket"></i>
    </div>
    <div class="header-title">
       <h1>Stationery Purchase</h1>
-      <small>Add other goods, which is purchased</small>
+      <small>Add stationery purchased</small>
    </div>
 </section>
 
@@ -36,8 +36,8 @@
                            <input type="text" name="item_name" value="{{ old('item_name') }}" class="form-control" placeholder="Enter Item Name" required>
                         </div>
                         <div class="form-group">
-                           <label>Supplier Name</label>
-                           <input type="text" name="supplier_name" value="{{ old('supplier_name') }}" class="form-control" placeholder="Enter Quantity" required>
+                           <label>Supplier Name (optional)</label>
+                           <input type="text" name="supplier_name" value="{{ old('supplier_name') }}" class="form-control" placeholder="Enter Supplier Name">
                         </div>
                         <div class="form-group">
                            <label>Item Description</label>
@@ -46,11 +46,11 @@
                         </div>
                         <div class="col-md-6 col-xl-6 col-sm-12">
                            <div class="form-group" style="clear:both;">
-                              <label>Reference</label>
+                              <label>Reference (optional)</label>
                               <input type="text" name="reference" value="{{ old('reference') }}" class="form-control" placeholder="Enter Reference">
                            </div>
                            <div class="form-group" style="clear:both;">
-                              <label>Quantity</label>
+                              <label>Quantity (optional)</label>
                               <input type="number" name="quentity" id="quentity" oninput="stationary()" class="form-control" value="{{ old('quentity') }}" placeholder="Enter Quantity">
                            </div>
                            <div class="form-group">
@@ -59,7 +59,7 @@
                            </div>
                            <div class="form-group" style="clear:both;">
                               <label>Total</label>
-                              <input type="number" name="total" id="total" class="form-control" placeholder="Enter total" readonly>
+                              <input type="number" name="total" id="total" class="form-control" readonly>
                            </div>
                            <div class="reset-button">
                               <button type="submit" class="btn btn-add pull-right w-md m-b-5">Add</button>
@@ -76,6 +76,7 @@
                      @endphp
                      @if(Session::has('session_id'))
                      <a href="{{ route('stationery.print.view') }}" class="btn btn-add w-md m-b-5">View & Print</a>
+                     <a href="{{ route('stationery.purchase.save') }}" class="btn btn-add w-md m-b-5">Save</a>
                         <table id="dataTableExample1" class="table table-bordered table-striped table-hover">
                            <thead>
                               <tr>

@@ -133,6 +133,13 @@
   </head>
   <body>
     <div id="wrapper">
+      @php
+          use App\Model\User\Sale\Sale;
+          $saleTable = Sale::orderBy('id', 'DESC')
+             ->where('token', Session('_token'))->get();
+
+       @endphp
+       @if(Session::has('session_id'))
       <header>
         <h1>Invoice</h1>
         <address contentreadonly>
@@ -143,27 +150,21 @@
         <span><img alt="" src="{{ asset('public/component') }}/assets/dist/img/logo.png" /></span>
       </header>
       <article>
-
-        @php
-          use App\Model\User\Sale\Sale;
-          $allSale = Sale::orderBy('id', 'DESC')
-             ->where('token', Session('_token'))->get();
-
-             
-       @endphp
        @foreach($allSale as $sale)
 
        @endforeach
                      
         <h1>Recipient</h1>
         <address contentreadonly>
-          <p>Name: {{ $allSale['0']['customer_name'] }}</p>
-          <p>Phone: {{ $allSale['0']['customer_phone'] }}</p>
+          <p>
+            Name: {{ $saleTable['0']['customer_name'] }}<br>
+            Phone: {{ $saleTable['0']['customer_phone'] }}
+          </p>
         </address>
         <table class="meta">
           <tr>
             <th><span contentreadonly>Invoice #</span></th>
-            <td><span contentreadonly>{{ $allSale['0']['invoiceNum'] }}</span></td>
+            <td><span contentreadonly>{{ $saleTable['0']['invoiceNum'] }}</span></td>
           </tr>
           <tr>
             <th><span contentreadonly>Date</span></th>
@@ -224,12 +225,11 @@
             </td>
           </tr>
           <tr>
-            <th><span contentreadonly>Discount</span></th>
+            <th><span contentreadonly style="font-weight:bold;">Discount</span></th>
             <td>
-              <p id="totalAmount">TK. {{ $discount }}</p>
+              <p id="totalAmount">TK. {{ number_format($discount) }}</p>
             </td>
           </tr>
-          
           <tr>
             <th><span contentreadonly>Amount Paid</span></th>
             <td>
@@ -246,7 +246,11 @@
       </article>
       <aside>
         <h1><span contentreadonly>Additional Notes</span></h1>
+        
       </aside>
+      @else
+      <h2>No item is added to show</h2>
+      @endif
     </div>
   </body>
 </html>

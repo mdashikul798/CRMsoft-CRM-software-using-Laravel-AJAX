@@ -3,7 +3,7 @@
 <!-- Content Header (Page header) -->
 <section class="content-header">
    <div class="header-icon">
-      <i class="fa fa-shopping-basket"></i>
+      <i class="fa fa-sticky-note-o"></i>
    </div>
    <div class="header-title">
       <h1>Deposit</h1>
@@ -28,8 +28,9 @@
                <form action="{{ route('save.depreciation') }}" method="post">
                   @csrf
                   <div class="form-group">
+                     <input type="hidden" name="id" id="id">
                      <label style="width:100%;float:left;">Enter Asset Name</label>
-                     <input type="text" name="asset_name" id="asset_name" class="form-control">
+                     <input type="text" name="asset_name" id="asset_name" class="form-control" required>
                   </div>
                   <div class="col-sm-12">
                      <div class="form-group col-sm-6 col-md-6">
@@ -37,8 +38,8 @@
                            <input type="number" name="purchase_price" id="purchase_price" class="form-control" readonly>
                      </div>
                      <div class="form-group col-sm-6 col-md-6">
-                        <label>Depreciation Percent (%)<span style="color:red;"> *</span></label>
-                           <input type="number" name="percent" id="percent" class="form-control" placeholder="Enter percent" required>
+                        <label>Depreciation (%)<span style="color:red;"> *</span></label>
+                           <input type="number" id="depPercent" name="percent" oninput="depreciation()" class="form-control" placeholder="Enter percent" required>
                      </div>
                   </div>
                   <div class="col-sm-12">
@@ -58,7 +59,7 @@
                      </div>
                   </div>
                   <div class="form-group">
-                     <button type="submit" class="btn btn-add w-md m-b-5 pull-right">Add</button>
+                     <button type="submit" class="btn btn-add w-md m-b-5 pull-right">Save</button>
                   </div>
                </form>
             </div>

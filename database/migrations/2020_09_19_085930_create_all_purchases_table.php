@@ -16,8 +16,11 @@ class CreateAllPurchasesTable extends Migration
         Schema::create('all_purchases', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('purchase_id');
+            $table->integer('category_id');
             $table->string('item_name');
             $table->string('item_code')->nullable();
+            $table->string('supplier_name')->nullable();
+            $table->string('supplier_phone')->nullable();
             $table->float('amountdue', 15, 2)->nullable();
             $table->tinyInteger('status')->default('0');
             $table->timestamps();

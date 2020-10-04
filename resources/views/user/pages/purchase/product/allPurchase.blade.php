@@ -2,11 +2,11 @@
 @section('content')
 <section class="content-header">
    <div class="header-icon">
-      <i class="fa fa-users"></i>
+      <i class="fa fa-shopping-basket"></i>
    </div>
    <div class="header-title">
       <h1>Purchase Details</h1>
-      <small>Customer List</small>
+      <small>Product purchase list</small>
       <div class="btn-group" id="buttonlist" style="float:right;top:-31px;">
       <input type="text" class="search form-control" placeholder="What you looking for?">
       </div>
@@ -49,15 +49,17 @@
                   <table id="dataTableExample1" class="table table-bordered table-striped table-hover results">
                      <thead>
                         <tr class="info">
+                           <th>S.L.</th>
                            <th>Voucher No.</th>
                            <th>Supplier Name</th>
                            <th>Supplier Phone</th>
                            <th>Date</th>
                            <th>Product Name</th>
                            <th>Price</th>
-                           <th>Quentity</th>
-                           <th>Discount</th>
+                           <th>Qty</th>
+                           <th>Payable</th>
                            <th>Total</th>
+                           <th>Dis.</th>
                         </tr>
                         <tr class="warning no-result">
                            <td colspan="4"><i class="fa fa-warning"></i> No result matched</td>
@@ -66,15 +68,17 @@
                      <tbody>
                         @foreach($allPurchase as $purchase)
                         <tr>
+                           <td>{{ $loop->index +1 }}</td>
                            <td>{{ $purchase->invoiceNum }}</td>
                            <td>{{ $purchase->supplier_name }}</td>
                            <td>{{ $purchase->supplier_phone }}</td>
                            <td>{{ date_format(new dateTime($purchase->created_at), 'd-m-y') }}</td>
-                           <td>{{ $purchase->item_name }}</td>
+                           <td>{{ $purchase->item_name }} - {{ $purchase->item_code }}</td>
                            <td>{{ number_format($purchase->price) }}</td>
                            <td>{{ $purchase->quentity }}</td>
+                           <td class="warning">{{ number_format($purchase->amountdue) }}</td>
+                           <td>{{ number_format($purchase->total + $purchase->amountdue) }}</td>
                            <td>{{ number_format($purchase->discount) }}</td>
-                           <td>{{ number_format($purchase->total) }}</td>
                         </tr>
                         @endforeach
                      </tbody>

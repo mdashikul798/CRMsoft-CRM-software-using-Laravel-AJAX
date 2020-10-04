@@ -10,7 +10,7 @@
    </div>
    <div class="btn-group" id="buttonlist" style="float:right;top:-45px;"> 
       <a class="btn btn-add " data-toggle="modal" data-target="#addcustom" href="#"> 
-      <i class="fa fa-list"></i> View Meter</a>  
+      <i class="fa fa-list"></i> View Branch</a>  
    </div>
 </section>
 
@@ -39,14 +39,14 @@
   				  </div>
   				  <div class="form-group">
   				    <label for="category">Branch Address</label>
-  				    <input type="text" name="branch_address" value="{{ old('branch_address') }}" class="form-control" id="category" aria-describedby="category" placeholder="Enter branch category" required>
+  				    <input type="text" name="branch_address" value="{{ old('branch_address') }}" class="form-control" id="category" aria-describedby="category" placeholder="Enter branch address" required>
   				  </div>
             <div class="form-group">
               <label for="category">Description (optional)</label>
               <textarea name="description" cols='8' rows="6" class="form-control"></textarea>
             </div>
   				  <div class="form-check">
-  				  	<button type="submit" class="btn btn-add pull-right w-md m-b-5">Save Meter</button>
+  				  	<button type="submit" class="btn btn-add pull-right w-md m-b-5">Save Branch</button>
   				  </div>
   				</form>
                </div>
@@ -89,7 +89,7 @@
                              <td>{{ $branch->branch_address }}</td>
 	                           <td>{{ $branch->description }}</td>
 	                           <td>
-	                              <input {{ $branch->status ==1 ? 'checked':''}} id="changeBranchStatus" data-id="{{ $branch->id}}" type="checkbox" data-toggle="toggle" data-on="Active" data-off="Inactive">
+	                              <input {{ $branch->status ==1 ? 'checked':''}} id="changeBranchStatus" data-id="{{ $branch->id}}" type="checkbox" data-toggle="toggle" data-on="Active" data-off="Inactive" data-size="mini">
 	                           </td>
 	                           <td>
 	                              <a href="{{ route('deleteBranch', $branch->id) }}" class="btn btn-danger btn-sm" id="delete"><i class="fa fa-trash-o"></i> </a>

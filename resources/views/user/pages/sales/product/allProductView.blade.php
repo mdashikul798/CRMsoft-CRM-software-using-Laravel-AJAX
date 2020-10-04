@@ -2,11 +2,11 @@
 @section('content')
 <section class="content-header">
    <div class="header-icon">
-      <i class="fa fa-users"></i>
+      <i class="fa fa-shopping-cart"></i>
    </div>
    <div class="header-title">
       <h1>All Product Sale</h1>
-      <small>Customer List</small>
+      <small>Product sale list</small>
    </div>
    <div class="btn-group" id="buttonlist" style="float:right;top:-45px;">
       <input type="text" class="search form-control" placeholder="What you looking for?">
@@ -22,7 +22,7 @@
             <div class="panel-heading">
                <div class="btn-group" id="buttonexport">
                   <a href="#">
-                     <h4>Sales incormation</h4>
+                     <h4>Sales Details</h4>
                   </a>
                </div>
             </div>
@@ -51,13 +51,14 @@
                         <tr class="info">
                            <th>Voucher No.</th>
                            <th>Customer Name</th>
-                           <th>Customer Phone</th>
+                           <th>Phone</th>
                            <th>Date</th>
                            <th>Product Name</th>
                            <th>Price</th>
-                           <th>Quentity</th>
-                           <th>Discount</th>
+                           <th>Qty</th>
+                           <th>Due</th>
                            <th>Total</th>
+                           <th>Dsc.</th>
                         </tr>
                         <tr class="warning no-result">
                            <td colspan="4"><i class="fa fa-warning"></i> No result matched</td>
@@ -70,11 +71,12 @@
                            <td>{{ $sale->customer_name }}</td>
                            <td>{{ $sale->phone }}</td>
                            <td>{{ date_format(new dateTime($sale->created_at), 'd-m-y') }}</td>
-                           <td>{{ $sale->item_name }}</td>
+                           <td>{{ $sale->item_name }} - {{ $sale->item_code }}</td>
                            <td>{{ number_format($sale->price) }}</td>
                            <td>{{ $sale->quentity }}</td>
-                           <td>{{ number_format($sale->discount) }}</td>
+                           <td class="warning">{{ number_format($sale->amountdue) }}</td>
                            <td>{{ number_format($sale->total) }}</td>
+                           <td>{{ number_format($sale->discount) }}</td>
                         </tr>
                         @endforeach
                      </tbody>

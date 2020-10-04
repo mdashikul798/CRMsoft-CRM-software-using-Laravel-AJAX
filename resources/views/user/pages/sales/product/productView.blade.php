@@ -134,9 +134,10 @@
   <body>
     <div id="wrapper">
       @php
-          use App\Model\User\Sale\OtherSale;
-          $other = OtherSale::orderBy('id', 'DESC')
+          use App\Model\User\Sale\Sale;
+          $saleTable = Sale::orderBy('id', 'DESC')
              ->where('token', Session('_token'))->get();
+
        @endphp
        @if(Session::has('session_id'))
       <header>
@@ -156,14 +157,14 @@
         <h1>Recipient</h1>
         <address contentreadonly>
           <p>
-            Name: {{ $allSale['0']['customer_name'] }}<br>
-            Phone: {{ $allSale['0']['customer_phone'] }}
+            Name: {{ $saleTable['0']['customer_name'] }}<br>
+            Phone: {{ $saleTable['0']['customer_phone'] }}
           </p>
         </address>
         <table class="meta">
           <tr>
             <th><span contentreadonly>Invoice #</span></th>
-            <td><span contentreadonly>{{ $allSale['0']['invoiceNum'] }}</span></td>
+            <td><span contentreadonly>{{ $saleTable['0']['invoiceNum'] }}</span></td>
           </tr>
           <tr>
             <th><span contentreadonly>Date</span></th>
@@ -188,27 +189,29 @@
               <th>Item</th>
               <th><span contentreadonly>Description</span></th>
               <th><span contentreadonly>Price</span></th>
-              <th><span contentreadonly>Due</span></th>
+              <th><span contentreadonly>Quantity</span></th>
               <th><span contentreadonly>Sub-Total</span></th>
             </tr>
           </thead>
           <tbody>
             @php
               $total_price = 0;
+              $discount = 0;
               $amountDue = 0;
             @endphp
             @foreach($allSale as $sale)
             @php
-              $total_price += $sale->price;
+              $subtotal = $sale->price * $sale->quentity;
+              $total_price += $subtotal;
+              $discount += $sale->discount;
               $amountDue += $sale->amountdue;
             @endphp
             <tr>
                <td>{{ $loop->index +1 }}</td>
                <td>{{ $sale->item_name }} - {{ $sale->item_code }}</td>
                <td>TK. {{ number_format($sale->price) }}</td>
-               <td>TK. {{ number_format($sale->amountdue) }}</td>
-               
-               <td>TK. {{ number_format($sale->price - $sale->amountdue) }}</td>
+               <td>{{ $sale->quentity }}</td>
+               <td>TK. {{ number_format($subtotal) }}</td>
             </tr>
             
             @endforeach
@@ -219,6 +222,12 @@
             <th><span contentreadonly style="font-weight:bold;">Total</span></th>
             <td>
               <p id="totalAmount" style="font-weight:bold;">TK. {{ number_format($total_price) }}</p>
+            </td>
+          </tr>
+          <tr>
+            <th><span contentreadonly style="font-weight:bold;">Discount</span></th>
+            <td>
+              <p id="totalAmount">TK. {{ number_format($discount) }}</p>
             </td>
           </tr>
           <tr>

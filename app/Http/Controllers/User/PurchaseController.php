@@ -68,17 +68,17 @@ class PurchaseController extends Controller
             $purchase->supplier_phone = $request->supplier_phone;
             $purchase->quentity = $request->quentity;
             $purchase->amountdue = $request->amountdue;
+            $purchase->exp_date = $request->exp_date;
             $purchase->price = $request->price;
             $purchase->discount = $request->discount * $request->quentity;
             $purchase->total = $request->total;
             $purchase->token = $token;
             $purchase->save();
-
         }catch(\Exception $e){
             return redirect('/purchase/product-purchase')->with('error', $e->getMessage());
         }
 
-        return redirect('/purchase/product-purchase')->with('success', 'Purchase added successfully');
+        return redirect('/purchase/product-purchase');
     }
 
     public function addPurchaseQty(Request $request, $id){
@@ -126,6 +126,48 @@ class PurchaseController extends Controller
         return back();
     }
 
+    public function productPurchaseSave(Request $request){
+        $allProduct = ProductPurchase::orderBy('id', 'DESC')
+                ->where('token', Session('_token'))->get();
+        
+        try{
+            $createdInv = $allProduct['0']['invoiceNum'];
+
+            foreach($allProduct as $product){
+                $allPurchase = new AllPurchase();
+                $allPayable = new Payable();
+                /*After updating data to the 'sale' table it will also save the data to the 'all_purchases' & 'payables' table*/
+                $allPurchase->purchase_id = $product->id;
+                $allPurchase->category_id = $product->category_id;
+                $allPurchase->item_code = $product->item_code;
+                $allPurchase->item_name = $product->item_name;
+                $allPurchase->supplier_name = $product->supplier_name;
+                $allPurchase->supplier_phone = $product->supplier_phone;
+                $allPurchase->amountdue = $product->amountdue;
+                $allPurchase->status = '1';
+                $allPurchase->save();
+
+                //If there is any "amountdue" then it will add to the 'payables' table
+                if(!empty($product->amountdue)){
+                    $allPayable->purchase_id = $product->id;
+                    $allPayable->amountdue = $product->amountdue;
+                    $allPayable->save();
+                }
+
+                $product->invoiceNum = $createdInv;
+                $product->token = null;
+                $product->status = '1';
+                $product->update();
+            }
+            
+        }catch(\Exception $e){
+            return redirect('/purchase/product-purchase')->with('error', $e->getMessage());
+        }
+        Session::forget('session_id');
+        return redirect('/purchase/product-purchase')->with('success', 'Product save successfully');
+
+    }
+
     public function purchasePrintView(){
         $allPurchase = ProductPurchase::orderBy('id', 'DESC')
                 ->where('token', Session('_token'))->get();
@@ -136,28 +178,36 @@ class PurchaseController extends Controller
         $allProduct = ProductPurchase::orderBy('id', 'DESC')
                 ->where('token', Session('_token'))->get();
         $allPurchase = new AllPurchase();
-        $allPayable = new Payable();
+        
+
         try{
             $pdf = PDF::loadView('user.pages.purchase.product.invoice', compact('allPurchase'));
             $createdInv = $allProduct['0']['invoiceNum'];
 
             foreach($allProduct as $product){
+                //If there is any "amountdue" then it will add to the 'payables' table
+                $allPayable = new Payable();
+                if(!empty($product->amountdue)){
+                    $allPayable->purchase_id = $product->id;
+                    $allPayable->amountdue = $product->amountdue;
+                    $allPayable->save();
+                }
+
+                /*After updating data to the 'sale' table it will also save the data to the 'view_sales' & 'payables' table*/
+                $allPurchase->purchase_id = $product->id;
+                $allPurchase->category_id = $product->category_id;
+                $allPurchase->item_code = $product->item_code;
+                $allPurchase->item_name = $product->item_name;
+                $allPurchase->supplier_name = $product->supplier_name;
+                $allPurchase->supplier_phone = $product->supplier_phone;
+                $allPurchase->amountdue = $product->amountdue;
+                $allPurchase->status = '1';
+                $allPurchase->save();
+                
                 $product->invoiceNum = $createdInv;
                 $product->token = null;
                 $product->status = '1';
                 $product->update();
-
-    /*After updating data to the 'sale' table it will also save the data to the 'view_sales' & 'payables' table*/
-                $allPurchase->purchase_id = $product->id;
-                $allPurchase->item_code = $product->item_code;
-                $allPurchase->item_name = $product->item_name;
-                $allPurchase->amountdue = $product->amountdue;
-                $allPurchase->status = '1';
-                $allPurchase->save();
-
-                $allPayable->purchase_id = $product->id;
-                $allPayable->amountdue = $product->amountdue;
-                $allPayable->save();
             }
             $pdf->stream('invoice.pdf');
             Session::forget('session_id');
@@ -165,6 +215,7 @@ class PurchaseController extends Controller
         }catch(\Exception $e){
             return redirect('/purchase/product-purchase')->with('error', $e->getMessage());
         }
+        
         return redirect('/purchase/product-purchase');
     }
     //End of product sell route
@@ -176,7 +227,6 @@ class PurchaseController extends Controller
     public function addStationery(Request $request){
         $request->validate([
             'item_name' => 'required',
-            'supplier_name' => 'required',
             'price' => 'required'
         ]);
         try{
@@ -248,16 +298,9 @@ class PurchaseController extends Controller
         return back();
     }
 
-    public function stationeryPrintView(){
+    public function stationeryPurchaseSave(Request $request){
         $allPurchase = StationaryPurchase::orderBy('id', 'DESC')
                 ->where('token', Session('_token'))->get();
-        return view('user.pages.purchase.stationery.stationeryView', compact('allPurchase'));
-    }
-
-    public function stationeryPrint(Request $request){
-        $allPurchase = StationaryPurchase::orderBy('id', 'DESC')
-                ->where('token', Session('_token'))->get();
-        $viewPurchase = new AllPurchase();
         try{
             $pdf = PDF::loadView('user.pages.purchase.stationery.invoice', compact('allPurchase'));
             $createdInv = $allPurchase['0']['invoiceNum'];
@@ -267,12 +310,33 @@ class PurchaseController extends Controller
                 $purchase->token = null;
                 $purchase->status = '1';
                 $purchase->update();
+            }
+        }catch(\Exception $e){
+            return redirect('/purchase/stationery-purchase')->with('error', $e->getMessage());
+        }
+        Session::forget('session_id');
+        return redirect('/purchase/stationery-purchase')->with('success', 'Stationary purchase added');
+    }
 
-    /*After updating data to the 'StationaryPurchase' table it will also save the data to the 'view_sales' table*/
-                $viewPurchase->purchase_id = $purchase->id;
-                $viewPurchase->item_name = $purchase->item_name;
-                $viewPurchase->status = '1';
-                $viewPurchase->save();
+    public function stationeryPrintView(){
+        $allPurchase = StationaryPurchase::orderBy('id', 'DESC')
+                ->where('token', Session('_token'))->get();
+        return view('user.pages.purchase.stationery.stationeryView', compact('allPurchase'));
+    }
+
+    public function stationeryPrint(Request $request){
+        $allPurchase = StationaryPurchase::orderBy('id', 'DESC')
+                ->where('token', Session('_token'))->get();
+        
+        try{
+            $pdf = PDF::loadView('user.pages.purchase.stationery.invoice', compact('allPurchase'));
+            $createdInv = $allPurchase['0']['invoiceNum'];
+
+            foreach($allPurchase as $purchase){
+                $purchase->invoiceNum = $createdInv;
+                $purchase->token = null;
+                $purchase->status = '1';
+                $purchase->update();
             }
             $pdf->stream('invoice.pdf');
             Session::forget('session_id');
@@ -363,6 +427,36 @@ class PurchaseController extends Controller
         return back();
     }
 
+    public function assetPurchaseSave(Request $request){
+        $allPurchase = AssetPurchase::orderBy('id', 'DESC')
+                ->where('token', Session('_token'))->get();
+        
+        try{
+            $createdInv = $allPurchase['0']['invoiceNum'];
+
+            foreach($allPurchase as $purchase){
+                $purchase->invoiceNum = $createdInv;
+                $purchase->token = null;
+                $purchase->status = '1';
+                $purchase->update();
+
+                /*After updating data to the 'asset_purchases' table it will also save the data to the 'depreciations' table*/
+                $allDepreciations = new Depreciation();
+                $allDepreciations->asset_id = $purchase->id;
+                $allDepreciations->asset_name = $purchase->item_name;
+                $allDepreciations->purchase_price = $purchase->total;
+                $allDepreciations->present_value = $purchase->total;
+                $allDepreciations->purchase_date = $purchase->created_at;
+                $allDepreciations->status = '1';
+                $allDepreciations->save();
+            }
+            Session::forget('session_id');
+        }catch(\Exception $e){
+            return redirect('/purchase/asset-purchase')->with('error', $e->getMessage());
+        }
+        return redirect('/purchase/asset-purchase')->with('success', 'Asset purchases added');
+    }
+
     public function assetPrintView(){
         $allPurchase = AssetPurchase::orderBy('id', 'DESC')
                 ->where('token', Session('_token'))->get();
@@ -372,9 +466,6 @@ class PurchaseController extends Controller
     public function assetPrint(Request $request){
         $allPurchase = AssetPurchase::orderBy('id', 'DESC')
                 ->where('token', Session('_token'))->get();
-        $viewPurchase = new AllPurchase();
-        $allDepreciations = new Depreciation();
-
         try{
             $pdf = PDF::loadView('user.pages.purchase.asset.invoice', compact('allPurchase'));
             $createdInv = $allPurchase['0']['invoiceNum'];
@@ -385,12 +476,8 @@ class PurchaseController extends Controller
                 $purchase->status = '1';
                 $purchase->update();
 
-    /*After updating data to the 'stationary_purchases' table it will also save the data to the 'view_sales' and 'depreciations' table*/
-                $viewPurchase->purchase_id = $purchase->id;
-                $viewPurchase->item_name = $purchase->item_name;
-                $viewPurchase->status = '1';
-                $viewPurchase->save();
-
+                //also add data to the 'depreciations' table
+                $allDepreciations = new Depreciation();
                 $allDepreciations->asset_id = $purchase->id;
                 $allDepreciations->asset_name = $purchase->item_name;
                 $allDepreciations->purchase_price = $purchase->total;
@@ -411,29 +498,25 @@ class PurchaseController extends Controller
     //End of product sell route
 
     public function viewProductPurchase(){
-        $allPurchase = DB::table('all_purchases')->orderBy('id', 'DESC')
-                ->join('product_purchases', 'all_purchases.purchase_id', '=', 'product_purchases.id')
-                ->select('all_purchases.*', 'product_purchases.invoiceNum', 'product_purchases.supplier_name', 'product_purchases.supplier_phone', 'product_purchases.price', 'product_purchases.quentity', 'product_purchases.discount', 'product_purchases.total')
-                ->where('all_purchases.status', 1)
+        $allPurchase = ProductPurchase::orderBy('created_at', 'ASC')
+                ->where('status', '1')
                 ->get();
 
     	return view('user.pages.purchase.product.allPurchase', compact('allPurchase'));
     }
 
     public function viewStationeryPurchase(){
-        $allPurchase = DB::table('all_purchases')->orderBy('id', 'DESC')
-                ->join('stationary_purchases', 'all_purchases.purchase_id', '=', 'stationary_purchases.id')
-                ->select('all_purchases.*', 'stationary_purchases.invoiceNum', 'stationary_purchases.supplier_name', 'stationary_purchases.price', 'stationary_purchases.quentity', 'stationary_purchases.total', 'stationary_purchases.reference')
-                ->where('all_purchases.status', 1)
+        $allPurchase = DB::table('stationary_purchases')->orderBy('id', 'DESC')
+                ->select('stationary_purchases.*')
+                ->where('stationary_purchases.status', '1')
                 ->get();
         return view('user.pages.purchase.stationery.allPurchase', compact('allPurchase'));
     }
 
     public function viewAssetPurchase(){
-        $allPurchase = DB::table('all_purchases')->orderBy('id', 'DESC')
-                ->join('asset_purchases', 'all_purchases.purchase_id', '=', 'asset_purchases.id')
-                ->select('all_purchases.*', 'asset_purchases.invoiceNum', 'asset_purchases.supplier_name', 'asset_purchases.price', 'asset_purchases.quentity', 'asset_purchases.total')
-                ->where('all_purchases.status', 1)
+        $allPurchase = DB::table('asset_purchases')->orderBy('id', 'DESC')
+                ->select('asset_purchases.*')
+                ->where('asset_purchases.status', '1')
                 ->get();
         return view('user.pages.purchase.asset.allPurchase', compact('allPurchase'));
     }

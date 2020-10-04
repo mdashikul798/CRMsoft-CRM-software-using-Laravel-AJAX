@@ -104,9 +104,11 @@ $(document).ready(function(){
             if (selectedData && selectedData.item && selectedData.item.data){
                 var data = selectedData.item.data;
 
+                $('#id').val(data.id);
                 $('#purchase_price').val(data.purchase_price);
                 $('#accumulated').val(data.accumulated);
                 $('#present_value').val(data.present_value);
+                $('#percent').val(data.percent);
             }
         }
     });
@@ -187,6 +189,82 @@ $(document).ready(function(){
     });
     //end of edit the supplier
 
+    //'receivable' update after get paid
+    $(document).ready(function(){
+        $('.get_paid').on('click', function(){
+            $('.receivable_modal').modal('show');
+            $tr = $(this).closest('tr');
+
+            var data = $tr.children('td').map(function(){
+                return $(this).text();
+            }).get();
+
+            console.log(data);
+            $('#received_id').val(data[0]);
+            $('#voucher').val(data[2]);
+            $('#name').val(data[3]);
+            $('#amountDue').val(data[7]);
+        });
+        
+        $('#receivAblePaid').on('submit', function(e){
+            e.preventDefault();
+
+            var id = $('#received_id').val();
+            $.ajax({
+                method: 'get',
+                url: 'receivablePaid/'+id,
+                data: $('#receivAblePaid').serialize(),
+                success: function(resqonse){
+                    console.log(resqonse);
+                    $('.get_paid').modal('hide');
+                    location.reload();
+                },
+                error: function(error){
+                    console.log(error);
+                }
+            });
+        });
+    });
+    //end of 'receivable' get paid
+
+    //'payables' update after get paid
+    $(document).ready(function(){
+        $('.make_payment').on('click', function(){
+            $('.payable_modal').modal('show');
+            $tr = $(this).closest('tr');
+
+            var data = $tr.children('td').map(function(){
+                return $(this).text();
+            }).get();
+
+            console.log(data);
+            $('#payable_id').val(data[0]);
+            $('#voucher').val(data[1]);
+            $('#supplier_name').val(data[2]);
+            $('#amountDue').val(data[6]);
+        });
+        
+        $('#payablePaid').on('submit', function(e){
+            e.preventDefault();
+
+            var id = $('#payable_id').val();
+            $.ajax({
+                method: 'get',
+                url: 'payablePaid/'+id,
+                data: $('#payablePaid').serialize(),
+                success: function(resqonse){
+                    console.log(resqonse);
+                    $('.payable_modal').modal('hide');
+                    location.reload();
+                },
+                error: function(error){
+                    console.log(error);
+                }
+            });
+        });
+    });
+    //end of 'payables' get paid
+
     /*Script for 'Return' from customer*/
         //search by invoice number
     $('#invoiceNum').autocomplete({
@@ -225,8 +303,9 @@ $(document).ready(function(){
             if (selectedData && selectedData.item && selectedData.item.data){
                 var data = selectedData.item.data;
 
-                $('#item_name').val(data.item_name + ' - ' +data.item_code);
+               $('#item_name').val(data.item_name + ' - ' +data.item_code);
                 $('#customer_name').val(data.customer_name);
+                $('#purchase_id').val(data.purchase_id);
                 $('#phone').val(data.phone);
                 $('#price').val(data.price);
                 $('#discount').val(data.discount);
@@ -276,8 +355,10 @@ $(document).ready(function(){
 
                 $('#invoiceNum').val(data.invoiceNum);
                 $('#customer_name').val(data.customer_name);
+                $('#purchase_id').val(data.purchase_id);
                 $('#phone').val(data.phone);
                 $('#price').val(data.price);
+                $('#supplier_phone').val(data.supplier_phone);
                 $('#discount').val(data.discount);
                 $('#total').val(data.total);
                 $('#quentity').val(data.quentity);
@@ -325,6 +406,7 @@ $(document).ready(function(){
             if (selectedData && selectedData.item && selectedData.item.data){
                 var data = selectedData.item.data;
 
+                $('#invoiceNum').val(data.invoiceNum);
                 $('#product_name').val(data.item_name);
                 $('#supplier_name').val(data.supplier_name);
                 $('#phone').val(data.supplier_phone);
@@ -374,6 +456,7 @@ $(document).ready(function(){
             if (selectedData && selectedData.item && selectedData.item.data){
                 var data = selectedData.item.data;
 
+                $('#invoiceNum').val(data.invoiceNum);
                 $('#item_code').val(data.item_code);
                 $('#supplier_name').val(data.supplier_name);
                 $('#phone').val(data.supplier_phone);
@@ -388,8 +471,8 @@ $(document).ready(function(){
     /*End of 'Return' from the supplier */
 
     
-    
   });
+//End of 'Document.ready function'
 
 /*Script to manage the editable input field*/
 $('.chosen').chosen();
@@ -464,41 +547,85 @@ function totalOtherIncome(){
     
 }
 
-//script for stationary purchase calculation
-function stationary(){
-    var inputQty = document.getElementById('quentity').value;
-    var inputPrice = document.getElementById('price').value;
-    var convartQty = parseInt(inputQty);
-    var convartPrice = parseInt(inputPrice);
-
-    document.getElementById('total').value = convartPrice * convartQty;
-}
-
-//Script for live data search
-$(document).ready(function() {
-  $(".search").keyup(function () {
-    var searchTerm = $(".search").val();
-    var listItem = $('.results tbody').children('tr');
-    var searchSplit = searchTerm.replace(/ /g, "'):containsi('")
-    
-  $.extend($.expr[':'], {'containsi': function(elem, i, match, array){
-        return (elem.textContent || elem.innerText || '').toLowerCase().indexOf((match[3] || "").toLowerCase()) >= 0;
+    //Stationary purchase calculation
+    function stationary(){
+        var inputQty = document.getElementById('quentity').value;
+        var inputPrice = document.getElementById('price').value;
+        var convartQty = parseInt(inputQty);
+        var convartPrice = parseInt(inputPrice);
+        if(inputQty == ''){
+            document.getElementById('total').value = convartPrice;
+        }else{
+            document.getElementById('total').value = convartPrice * convartQty;
+        }
     }
-  });
-    
-  $(".results tbody tr").not(":containsi('" + searchSplit + "')").each(function(e){
-    $(this).attr('visible','false');
-  });
 
-  $(".results tbody tr:containsi('" + searchSplit + "')").each(function(e){
-    $(this).attr('visible','true');
-  });
+    //Script for live data search
+    $(document).ready(function() {
+      $(".search").keyup(function () {
+        var searchTerm = $(".search").val();
+        var listItem = $('.results tbody').children('tr');
+        var searchSplit = searchTerm.replace(/ /g, "'):containsi('")
+        
+      $.extend($.expr[':'], {'containsi': function(elem, i, match, array){
+            return (elem.textContent || elem.innerText || '').toLowerCase().indexOf((match[3] || "").toLowerCase()) >= 0;
+        }
+      });
+        
+      $(".results tbody tr").not(":containsi('" + searchSplit + "')").each(function(e){
+        $(this).attr('visible','false');
+      });
 
-  var jobCount = $('.results tbody tr[visible="true"]').length;
-    $('.counter').text(jobCount + ' item');
+      $(".results tbody tr:containsi('" + searchSplit + "')").each(function(e){
+        $(this).attr('visible','true');
+      });
 
-  if(jobCount == '0') {$('.no-result').show();}
-    else {$('.no-result').hide();}
-          });
-});
+      var jobCount = $('.results tbody tr[visible="true"]').length;
+        $('.counter').text(jobCount + ' item');
+
+      if(jobCount == '0') {$('.no-result').show();}
+        else {$('.no-result').hide();}
+        });
+    });
 //End of live data search
+
+//Depreciation calculation
+function depreciation(){
+    var purchase = document.getElementById('purchase_price').value;
+    var percent = document.getElementById('depPercent').value;
+    var accumulated = document.getElementById('accumulated').value;
+    var present_value = document.getElementById('present_value').value;
+
+    var purchase = parseInt(purchase);
+    var percent = parseInt(percent);
+    var accumulated = parseInt(accumulated);
+    var present_value = parseInt(present_value);
+    
+    var currentDep = (purchase - accumulated) / 100 * percent;
+    var currentAccu = accumulated + currentDep;
+    var currentValue = purchase - currentAccu;
+
+    document.getElementById('current_year').value = currentDep;
+    document.getElementById('accumulated').value = currentAccu;
+    document.getElementById('present_value').value = currentValue;
+}
+//End of depreciation calculation
+
+//Return calculation
+function customerReturnQty(){
+    var salePrice = document.getElementById('price').value;
+    var saleQty = document.getElementById('quentity').value;
+    var saleDiscount = document.getElementById('discount').value;
+    var returnQty = document.getElementById('return_quentity').value;
+    
+    var salePrice = parseInt(salePrice);
+    var saleQty = parseInt(saleQty);
+    var saleDiscount = parseInt(saleDiscount);
+    var returnQty = parseInt(returnQty);
+
+    var discount = (saleDiscount / saleQty) * returnQty;
+
+    document.getElementById('return_amount').value = (salePrice * returnQty) - discount;
+    document.getElementById('returnDiscount').value = discount;
+
+}

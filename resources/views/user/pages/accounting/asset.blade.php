@@ -2,7 +2,7 @@
 @section('content')
 <section class="content-header">
    <div class="header-icon">
-      <i class="fa fa-users"></i>
+      <i class="fa fa-bar-chart"></i>
    </div>
    <div class="header-title">
       <h1>All Asset</h1>
@@ -70,11 +70,11 @@
                         <tr>
                           <td>{{ $loop->index +1 }}</td>
                           <td>{{ $asset->asset_name }}</td>
-                          <td>{{ date_format(new dateTime($asset->purches_date), 'd-m-y') }}</td>
+                          <td>{{ date_format(new dateTime($asset->created_at), 'd-m-y') }}</td>
                            <td>{{ number_format($asset->purchase_price) }}</td>
                            <td>{{ $asset->percent }} %</td>
-                           <td>{{ $asset->accumulated }}</td>
-                           <td>{{ $asset->depreciation }}</td>
+                           <td>{{ number_format($asset->accumulated) }}</td>
+                           <td>{{ number_format($asset->depreciation) }}</td>
                            <td>{{ number_format($asset->present_value) }}</td>
                         </tr>
                         @php

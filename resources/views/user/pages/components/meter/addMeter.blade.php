@@ -89,7 +89,7 @@
                              <td>{{ $meter->meter_number }}</td>
 	                           <td>{{ $meter->description }}</td>
 	                           <td>
-	                              <input {{ $meter->status ==1 ? 'checked':''}} id="changeMeterStatus" data-id="{{ $meter->id}}" type="checkbox" data-toggle="toggle" data-on="Active" data-off="Inactive">
+	                              <input {{ $meter->status ==1 ? 'checked':''}} id="changeMeterStatus" data-id="{{ $meter->id}}" type="checkbox" data-toggle="toggle" data-on="Active" data-off="Inactive" data-size="mini">
 	                           </td>
 	                           <td>
 	                              <a href="{{ route('deleteMeter', $meter->id) }}" class="btn btn-danger btn-sm" id="delete"><i class="fa fa-trash-o"></i> </a>

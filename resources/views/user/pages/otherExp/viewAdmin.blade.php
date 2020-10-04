@@ -2,12 +2,16 @@
 @section('content')
 <section class="content-header">
    <div class="header-icon">
-      <i class="fa fa-users"></i>
+      <i class="fa fa-sticky-note-o"></i>
    </div>
    <div class="header-title">
       <h1>View Administrative Expences</h1>
       <small>Administrative list</small>
    </div>
+   <div class="btn-group" id="buttonlist" style="float:right;top:-45px;">
+      <input type="text" class="search form-control" placeholder="What you looking for?">
+   </div>
+   <span class="counter pull-right" style="margin-top:-38px;padding:5px;"></span>
 </section>
 
 <!-- Main content -->
@@ -42,7 +46,7 @@
                </div>
                <!-- Plugin content:powerpoint,txt,pdf,png,word,xl -->
                <div class="table-responsive">
-                  <table id="dataTableExample1" class="table table-bordered table-striped table-hover">
+                  <table id="dataTableExample1" class="table table-bordered table-striped table-hover results">
                      <thead>
                         <tr class="info">
                            <th>SL No.</th>
@@ -51,6 +55,9 @@
                            <th>Date</th>
                            <th>Amount</th>
                            <th>Description</th>
+                        </tr>
+                        <tr class="warning no-result">
+                           <td colspan="4"><i class="fa fa-warning"></i> No result matched</td>
                         </tr>
                      </thead>
                      <tbody>

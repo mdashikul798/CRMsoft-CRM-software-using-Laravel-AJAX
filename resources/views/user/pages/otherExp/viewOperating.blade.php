@@ -2,7 +2,7 @@
 @section('content')
 <section class="content-header">
    <div class="header-icon">
-      <i class="fa fa-users"></i>
+      <i class="fa fa-sticky-note-o"></i>
    </div>
    <div class="header-title">
       <h1>View Operating Expences</h1>
